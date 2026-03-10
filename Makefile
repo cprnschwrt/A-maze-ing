@@ -21,7 +21,7 @@ run:
 
 debug:
 	$(PYTHON) -m pdb $(MAIN)
-=
+
 clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache
 	rm -rf /tmp/a-maze-ing-venv
