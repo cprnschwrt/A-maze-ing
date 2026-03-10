@@ -1,0 +1,27 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pytest_cache/
+.mypy_cache/
+
+# Virtual environment
+/tmp/a-maze-ing-venv/
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Byte-compiled / optimized / distribution files
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Log files
+*.log
