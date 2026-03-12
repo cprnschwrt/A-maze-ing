@@ -1,40 +1,37 @@
-#!/usr/bin/env python3
-import daedalus
+#!/usr/bin/env python
 
-config = {}
 
-try:
-    with open("triwizard3.txt", "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" in line:
-                key, value = line.split("=", 1)
-                key = key.strip()
-                value = value.strip()
-                if value.isdigit():
-                    value = int(value)
-                config[key] = value
-            else:
-                config[line] = True
-except FileNotFoundError:
-    print("Error trying to read configuration file \"triwizard3.txt\".")
-    exit(1)
+def color(message: any, tcol: tuple = (255, 255, 255),
+          bcol: tuple = None,
+          bold: bool = False, ita: bool = False, under: bool = False,
+          finish: str = '\n', f: any = None) -> None:
+    if tcol is None:
+        tcol = (255, 255, 255)
+    style = "1;" if bold else ""
+    italic = "3;" if ita else ""
+    underline = "4;" if under else ""
+    bcolor = f"48;2;{bcol[0]};{bcol[1]};{bcol[2]};" if bcol else ""
+    style = style+italic+underline+bcolor
+    if (type(message) is dict or type(message) is list):
+        for mes in message:
+            print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
+                  f"m{mes}\033[0m", end=finish, file=f)
+            print("")
+    else:
+        print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
+              f"m{message}\033[0m",
+              end=finish, file=f)
 
-if "ENTRY" in config:
-    x, y = config["ENTRY"].split(",")
-    config["ENTRY"] = (int(x), int(y))
-if "EXIT" in config:
-    x, y = config["EXIT"].split(",")
-    config["EXIT"] = (int(x), int(y))
 
-width = config["WIDTH"]
-height = config["HEIGHT"]
+def main() -> None:
+    try:
+        import mlx_screen
+        mlx_screen.Screen()
+        color("A-MAZE-ING")
+    except ModuleNotFoundError:
+        color("Warning: mlx not downloaded, executing without visuals.",
+              (155, 155, 0), bold=True)
 
-grid = daedalus.create_empty_grid(width, height)
 
-# Test
-print("Created grid: ", len(grid), "rows ×", len(grid[0]), "columns")
-print("Cell (4,2):", grid[2][4]) #  Caution: cell (x,y) but grid[y][x]... 🙄
-#print("Cell (15,20):", grid[20][15]) # Correct error: leap in the dark.
+if __name__ == "__main__":
+    main()
