@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from Utils.classes import MazeGrid
 
 
 def color(message: any, tcol: tuple = (255, 255, 255),
@@ -24,10 +25,10 @@ def color(message: any, tcol: tuple = (255, 255, 255),
 
 
 def main() -> None:
+    maze = MazeGrid(x=10, y=8)
     try:
         import mlx_screen
-        mlx_screen.Screen()
-        color("A-MAZE-ING")
+        mlx_screen.Screen(maze)
     except ModuleNotFoundError:
         color("Warning: mlx not downloaded, executing without visuals.",
               (155, 155, 0), bold=True)
