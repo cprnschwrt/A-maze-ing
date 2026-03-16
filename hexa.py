@@ -1,0 +1,34 @@
+def hexa_cell(cell) -> str:
+    """From binary to hexa"""
+    val = 0
+    if cell.W:
+        val |= 8
+    if cell.S:
+        val |= 4
+    if cell.E:
+        val |= 2
+    if cell.N:
+        val |= 1
+    return hex(val)[2:].upper()
+
+
+def hexa_grid(grid) -> list[str]:
+    """Convert each cell of the grid in hexa."""
+    result = []
+    for x in range(grid.x):
+        row = []
+        for y in range(grid.y):
+            row.append(
+                hexa_cell(grid.objects[x][y]))
+        result.append("".join(row))
+    return result
+
+
+def binar_cell(grid, x: int, y: int, hex_val: str) -> None:
+    """From hexa to binary"""
+    val = int(hex_val, 16)
+    cell = grid.objects[x][y]
+    cell.N = 1 if val & 1 else 0
+    cell.E = 1 if val & 2 else 0
+    cell.S = 1 if val & 4 else 0
+    cell.W = 1 if val & 8 else 0
