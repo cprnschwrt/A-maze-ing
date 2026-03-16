@@ -1,35 +1,51 @@
 from mlx import Mlx
 from math import floor
-from Utils.classes import MazeGrid
+from Utils.classes import MazeGrid, Vector2
 from Utils.func import wait
+from typing import Generator
+import inspect
+
 
 mult = 100
-wait_time = 1
+steps = 0
+paused = False
+finished = False
+startpos = Vector2(x=2, y=2)
+sizemult = 1.4
 
-def close_screen(key: int, self) -> None:
+def close_screen(key: int, self) -> any:
     if key == 65307:
         self.mlx.mlx_loop_exit(self.initScreen)
+    elif key == 112:
+        global paused
+        if paused is False:
+            paused = True
+            print("Paused")
+        else:
+            paused = False
+            print("Unpaused")
+    elif key == 65363:
+        render(self, True)
+    else:
+        print(key)
 
 
 def show_grid(self) -> None:
     cell_size = int(floor(mult / 2))
-    cell_dimention = int(cell_size * 1.5)
+    cell_dimention = int(cell_size * sizemult)
     maze = self.maze
     for y in range(maze.y):
         for x in range(maze.x):
             posX = x * mult
             posY = y * mult
             pixel(0xFF0000FF, posX, posY, self, mult)
-
-    for y in range(maze.y):
-        for x in range(maze.x):
             posX = int((x * mult) - cell_dimention / 2)
             posY = int((y * mult) - cell_dimention / 2)
             pixel(0xFF000099, posX + cell_size, posY + cell_size,
                   self, cell_dimention)
 
 
-def update_cell(self, x, y) -> None:
+def update_cell_frame(self, x, y) -> None:
     maze: MazeGrid = self.maze
     cell = maze.objects[y][x]
 
@@ -37,7 +53,7 @@ def update_cell(self, x, y) -> None:
     posY = y * mult
 
     cell_size = int(floor(mult / 2))
-    cell_dimention = int(cell_size * 1.5)
+    cell_dimention = int(cell_size * sizemult)
 
     if cell.N == 0:
         pos = (int(posX - cell_dimention / 2) + cell_size)
@@ -53,7 +69,7 @@ def update_cell(self, x, y) -> None:
               self, cell_dimention)
     if cell.W == 0:
         pos = (int(posY - cell_dimention / 2) + cell_size)
-        pixel(0xFF000099, posX + cell_size, pos,
+        pixel(0xFF000099, posX - cell_size, pos,
               self, cell_dimention)
 
 
@@ -74,26 +90,26 @@ def pixel(color: int, nx: int, ny: int, self, size: int = mult) -> None:
                                 image, nx, ny)
 
 
-def render(self) -> None:
+def render(self, force: bool = False) -> None:
     maze: MazeGrid = self.maze
-    for y in range(maze.y):
-        for x in range(maze.x):
-            update_cell(self, x, y)
-    from random import randint
-    roll = randint(0, 3)
-    if roll == 0:
-        maze.objects[randint(0, maze.y)][randint(0, maze.x)].N = 0
-    elif roll == 1:
-        maze.objects[randint(0, maze.y)][randint(0, maze.x)].S = 0
-    elif roll == 2:
-        maze.objects[randint(0, maze.y)][randint(0, maze.x)].E = 0
-    elif roll == 3:
-        maze.objects[randint(0, maze.y)][randint(0, maze.x)].W = 0
-    wait(wait_time)
+    global finished
+    global steps
+    steps += 1
+    if paused is True and force is not True:
+        return
+    if finished == True:
+        return
+    if self.step is not None and inspect.getgeneratorstate(self.step) != "GEN_CLOSED":
+        self.step = next(self.step)
+    elif self.step is None:
+        print(f"Maze Finished in {steps} steps")
+        finished = True
+
 
 
 class Screen:
     def __init__(self, maze: MazeGrid) -> None:
+        from algo_backtrack_recursive import backtracking_recursive
         self.mlx = Mlx()
         self.initScreen = self.mlx.mlx_init()
         self.maze = maze
@@ -104,7 +120,12 @@ class Screen:
                 maze.y * mult,
                 "A-MAZE-ING"))
         m: Mlx = self.mlx
-        m.mlx_key_hook(self.screen, close_screen, self)
-        m.mlx_loop_hook(self.initScreen, render, self)
         show_grid(self)
+        self.step = backtracking_recursive(self, maze, startpos)
+        self.func = m.mlx_loop_hook(self.initScreen, render, self)
+        m.mlx_key_hook(self.screen, close_screen, self)
+        for y in range(maze.y):
+            for x in range(maze.x):
+                update_cell_frame(self, x, y)
         m.mlx_loop(self.initScreen)
+
