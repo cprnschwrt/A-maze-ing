@@ -1,10 +1,10 @@
 from mlx import Mlx
 from math import floor
 from Utils.classes import MazeGrid
-
+from Utils.func import wait
 
 mult = 100
-
+wait_time = 1
 
 def close_screen(key: int, self) -> None:
     if key == 65307:
@@ -89,6 +89,7 @@ def render(self) -> None:
         maze.objects[randint(0, maze.y)][randint(0, maze.x)].E = 0
     elif roll == 3:
         maze.objects[randint(0, maze.y)][randint(0, maze.x)].W = 0
+    wait(wait_time)
 
 
 class Screen:

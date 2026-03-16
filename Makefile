@@ -3,8 +3,8 @@
 PYTHON := /tmp/a-maze-ing-venv/bin/python3
 PIP := /tmp/a-maze-ing-venv/bin/pip
 PYTEST := /tmp/a-maze-ing-venv/bin/pytest
-FLAKE8 := /tmp/a-maze-ing-venv/bin/flake8
-MYPY := /tmp/a-maze-ing-venv/bin/mypy
+FLAKE8 := python3 -m flake8 .
+MYPY := python3 -m mypy .
 
 VE := a-maze-ing
 MAIN := a_maze_ing.py

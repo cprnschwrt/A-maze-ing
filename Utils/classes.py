@@ -60,7 +60,7 @@ class MazeGrid(BaseModel):
     objects: list = []
 
     @model_validator(mode="after")
-    def init(self):
+    def start(self):
         for y in range(self.y):
             list.append(self.objects, [])
             for x in range(self.x):
