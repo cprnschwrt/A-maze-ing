@@ -1,5 +1,5 @@
 from pydantic import BaseModel, model_validator
-from hexa import binar_cell, hexa_grid
+from utils.hexa import binar_cell, hexa_grid
 import random
 
 

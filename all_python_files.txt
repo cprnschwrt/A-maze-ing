@@ -1,71 +1,31 @@
-=== ./utils/__init__.py ===
+=== ./tests/test_main.py ===
+import pytest
+from a_maze_ing import add, divide
 
-=== ./utils/walk.py ===
-import curses
+def test_add_basic():
+    assert add(20,30) == 50
 
-def main(stdscr):
-    # Terminal config
-    curses.noecho()          # Keys deactivation
-    curses.cbreak()          # Characters deactivation
-    stdscr.keypad(True)      # Arrows activation
+def test_add_negative():
+    assert add(-1, -1) == -2
 
-    while True:
-        c = stdscr.getch()   # Instant reading of a key
+def test_add_normal():
+    assert divide(20, 2) == 10
 
-        if c == curses.KEY_UP:
-            stdscr.addstr("N\n")
-        elif c == curses.KEY_DOWN:
-            stdscr.addstr("S\n")
-        elif c == curses.KEY_LEFT:
-            stdscr.addstr("W\n")
-        elif c == curses.KEY_RIGHT:
-            stdscr.addstr("E\n")
-        elif c == 27:  # Esc Key
-            break
+def test_divide_by_zero():
+    with pytest.raises(ValueError):
+        divide(10, 0)
+=== ./daedalus.py ===
+cell_template = {"N": True, "E": True, "S": True, "W": True}
 
-    # Parameters restauration
-    stdscr.keypad(False)
-    curses.nocbreak()
-    curses.echo()
-    curses.endwin()
+def create_empty_grid(width, height):
+    return [[cell_template.copy() for x in range(width)] for y in range(height)]
 
-if __name__ == "__main__":
-    curses.wrapper(main)
+def iterate_grid(grid):
+    for y in range(len(grid)):
+        for x in range(len(grid[0])):
+            cell = grid[y][x]
 
 === ./utils/pattern/__init__.py ===
-
-=== ./utils/pattern/hexa.py ===
-def hexa_cell(cell) -> str:
-    val = 0
-    if cell.W:
-        val |= 8  # 1000
-    if cell.S:
-        val |= 4  # 0100
-    if cell.E:
-        val |= 2  # 0010
-    if cell.N:
-        val |= 1  # 0001
-    return hex(val)[2:].upper()
-
-
-def binar_cell(grid, x: int, y: int, hex_val: str):
-    val = int(hex_val, 16)
-    cell = grid.objects[x][y]
-
-    cell.N = 1 if val & 1 else 0
-    cell.E = 1 if val & 2 else 0
-    cell.S = 1 if val & 4 else 0
-    cell.W = 1 if val & 8 else 0
-
-
-def hexa_grid(grid):
-    result = []
-    for x in range(grid.x):
-        row = []
-        for y in range(grid.y):
-            row.append(hexa_cell(grid.objects[x][y]))
-        result.append("".join(row))
-    return result
 
 === ./utils/pattern/classes.py ===
 from pydantic import BaseModel, model_validator
@@ -232,9 +192,44 @@ for hex_x, line in enumerate(hex_lines):
 
 grid.display()
 
+=== ./utils/pattern/hexa.py ===
+def hexa_cell(cell) -> str:
+    val = 0
+    if cell.W:
+        val |= 8  # 1000
+    if cell.S:
+        val |= 4  # 0100
+    if cell.E:
+        val |= 2  # 0010
+    if cell.N:
+        val |= 1  # 0001
+    return hex(val)[2:].upper()
+
+
+def binar_cell(grid, x: int, y: int, hex_val: str):
+    val = int(hex_val, 16)
+    cell = grid.objects[x][y]
+
+    cell.N = 1 if val & 1 else 0
+    cell.E = 1 if val & 2 else 0
+    cell.S = 1 if val & 4 else 0
+    cell.W = 1 if val & 8 else 0
+
+
+def hexa_grid(grid):
+    result = []
+    for x in range(grid.x):
+        row = []
+        for y in range(grid.y):
+            row.append(hexa_cell(grid.objects[x][y]))
+        result.append("".join(row))
+    return result
+
+=== ./utils/__init__.py ===
+
 === ./utils/classes.py ===
 from pydantic import BaseModel, model_validator
-from hexa import binar_cell, hexa_grid
+from utils.hexa import binar_cell, hexa_grid
 import random
 
 
@@ -281,6 +276,7 @@ def get_slot_print(self, x: int, y: int, line: int) -> str:
     p2 = wall
     p3 = wall
 
+    # maze doors
     if line == 0 and current.N:
         p2 = door
     if line == 1:
@@ -292,21 +288,21 @@ def get_slot_print(self, x: int, y: int, line: int) -> str:
     if line == 2 and current.S:
         p2 = door
 
-    if (x, y) in pattern_cells:
-        x_step = x - pattern_px
-        y_step = y - pattern_py
+    # pattern
+    if (x, y) in motif_cells:
+        x_step = x - motif_px
+        y_step = y - motif_py
         color = random_gradation(
-            r0, g0, b0,
+            r0, g0, b0, 
             x_step, y_step,
-            width=pattern_width,
-            height=pattern_height
-        )
+            width=len(ft_pattern[0]),
+            height=len(ft_pattern))
         if p1 == door:
-            p1 = f"{color}█͏█{CLR_END}"
+            p1 = f"{color}██{CLR_END}"
         if p2 == door:
-            p2 = f"{color}█͏█{CLR_END}"
+            p2 = f"{color}██{CLR_END}"
         if p3 == door:
-            p3 = f"{color}█͏█{CLR_END}"
+            p3 = f"{color}██{CLR_END}"
 
     if 0 < x < self.x and line == 0:
         p1, p2, p3 = "", "", ""
@@ -346,40 +342,36 @@ max_x = 5
 max_y = 7
 grid = MazeGrid(x=max_x, y=max_y)
 
-pattern = ["C04084", "C084C0", "00009"]
-pattern_height = len(pattern)
-pattern_width = len(pattern[0])
+ft_pattern = ["C04084", "C084C0", "00009"]
+motif_height = len(ft_pattern) + 1
+motif_width = len(ft_pattern[0])
 
 r0, g0, b0 = random_base_colour()
 
-pattern_px = random.randint(0, grid.x - pattern_height)
-pattern_py = random.randint(0, grid.y - pattern_width)
+motif_px = random.randint(0, grid.x - motif_height)
+motif_py = random.randint(0, grid.y - motif_width)
 
-pattern_cells = [
-    (pattern_px + x, pattern_py + y)
-    for x in range(len(pattern))
-    for y in range(len(pattern[0]))]
+motif_cells = [
+    (motif_px + x, motif_py + y)
+    for x in range(len(ft_pattern))
+    for y in range(len(ft_pattern[0]))]
 
-for x, line in enumerate(pattern):
+for x, line in enumerate(ft_pattern):
     for y, hex_char in enumerate(line):
-        binar_cell(grid, pattern_px + x, pattern_py + y, hex_char)
+        binar_cell(grid, motif_px + x, motif_py + y, hex_char)
 
 hex_lines = hexa_grid(grid)
-print("")
-for line in hex_lines:
-    print(line)
-print("")
 for hx, line in enumerate(hex_lines):
     colored_line = ""
     for hy, c in enumerate(line):
-        if (hx, hy) in pattern_cells:
-            x_step = hx - pattern_px
-            y_step = hy - pattern_py
+        if (hx, hy) in motif_cells:
+            x_step = hx - motif_px
+            y_step = hy - motif_py
             color = random_gradation(
                 r0, g0, b0, 
                 x_step, y_step, 
-                width=len(pattern[0]), 
-                height=len(pattern))
+                width=len(ft_pattern[0]), 
+                height=len(ft_pattern))
             colored_line += f"{color}{c}{CLR_END}"
         else:
             colored_line += c
@@ -404,10 +396,8 @@ StringDisplay = {
     )
 }
 === ./utils/hexa.py ===
-def hexa_cell(cell):
-
+def hexa_cell(cell) -> str:
     val = 0
-
     if cell.W:
         val |= 8
     if cell.S:
@@ -416,28 +406,31 @@ def hexa_cell(cell):
         val |= 2
     if cell.N:
         val |= 1
-
     return hex(val)[2:].upper()
 
+def binar_cell(grid, x: int, y: int, hex_val: str):
+    if x < 0 or x >= len(grid.objects) or y < 0 or y >= len(grid.objects[0]):
+        raise IndexError(f"Les indices (x={x}, y={y}) sont hors de la grille.")
 
-def binar_cell(grid, x: int, y: int, hex_val: str) -> None:
     val = int(hex_val, 16)
     cell = grid.objects[x][y]
+
     cell.N = 1 if val & 1 else 0
     cell.E = 1 if val & 2 else 0
     cell.S = 1 if val & 4 else 0
     cell.W = 1 if val & 8 else 0
 
-def hexa_grid(grid) -> list[str]:
+def hexa_grid(grid):
     result = []
     for x in range(grid.x):
         row = []
         for y in range(grid.y):
-            row.append(
-                hexa_cell(grid.objects[x][y]))
+            row.append(hexa_cell(grid.objects[x][y]))
         result.append("".join(row))
     return result
 === ./utils/constants.py ===
+# utils/constants.py
+
 pattern_height = 3
 pattern_width = 3
 pattern = [
@@ -445,4 +438,399 @@ pattern = [
     "C084C0",
     "000009"
 ]
+=== ./utils/walk.py ===
+import curses
+
+def main(stdscr):
+    # Terminal config
+    curses.noecho()          # Keys deactivation
+    curses.cbreak()          # Characters deactivation
+    stdscr.keypad(True)      # Arrows activation
+
+    while True:
+        c = stdscr.getch()   # Instant reading of a key
+
+        if c == curses.KEY_UP:
+            stdscr.addstr("N\n")
+        elif c == curses.KEY_DOWN:
+            stdscr.addstr("S\n")
+        elif c == curses.KEY_LEFT:
+            stdscr.addstr("W\n")
+        elif c == curses.KEY_RIGHT:
+            stdscr.addstr("E\n")
+        elif c == 27:  # Esc Key
+            break
+
+    # Parameters restauration
+    stdscr.keypad(False)
+    curses.nocbreak()
+    curses.echo()
+    curses.endwin()
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+=== ./Utils/classes.py ===
+from pydantic import BaseModel, model_validator
+
+
+icon4 = (
+    "SX",
+    "ES",
+    "XX"
+    )
+
+icon2 = (
+    "ES",
+    "SW",
+    "ES"
+)
+
+
+def color(message: any, tcol: tuple = (255, 255, 255),
+          bcol: tuple = None,
+          bold: bool = False, ita: bool = False, under: bool = False,
+          finish: str = '\n', f: any = None) -> None:
+    if tcol is None:
+        tcol = (255, 255, 255)
+    style = "1;" if bold else ""
+    italic = "3;" if ita else ""
+    underline = "4;" if under else ""
+    bcolor = f"48;2;{bcol[0]};{bcol[1]};{bcol[2]};" if bcol else ""
+    style = bcolor+style+italic+underline
+    if (type(message) is dict or type(message) is list):
+        for mes in message:
+            print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
+                  f"m{mes}\033[0m", end=finish, file=f)
+            print("")
+    else:
+        print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
+              f"m{message}\033[0m",
+              end=finish, file=f)
+
+
+class Vector2(BaseModel):
+    x: int
+    y: int
+
+    def __str__(self):
+        return f"{self.x, self.y}"
+
+
+class MazePart():
+    def __init__(self, pos: Vector2):
+        self.position: Vector2 = pos
+        self.active: bool = True
+        self.N: int = 1
+        self.S: int = 1
+        self.E: int = 1
+        self.W: int = 1
+
+
+class MazeGrid(BaseModel):
+    x: int
+    y: int
+    objects: list = []
+
+    @model_validator(mode="after")
+    def start(self):
+        for y in range(self.y):
+            list.append(self.objects, [])
+            for x in range(self.x):
+                list.append(self.objects[y], [])
+                self.objects[y][x] = MazePart(Vector2(x=x, y=y))
+        return self
+
+    def getCell(self, x, y) -> None:
+        return self.objects[x][y].W
+
+    def __len__(self):
+        return f"{self.x, self.y}"
+
+=== ./Utils/func.py ===
+import time
+
+
+def wait(val: int) -> None:
+    start = time.time()
+    while (time.time() - start < val):
+        pass
+
+=== ./__init__.py ===
+
+=== ./(vieux) a_maze_ing.py ===
+#!/usr/bin/env python3
+import daedalus
+
+config = {}
+
+try:
+    with open("triwizard3.txt", "r") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" in line:
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+                if value.isdigit():
+                    value = int(value)
+                config[key] = value
+            else:
+                config[line] = True
+except FileNotFoundError:
+    print("Error trying to read configuration file \"triwizard3.txt\".")
+    exit(1)
+
+if "ENTRY" in config:
+    x, y = config["ENTRY"].split(",")
+    config["ENTRY"] = (int(x), int(y))
+if "EXIT" in config:
+    x, y = config["EXIT"].split(",")
+    config["EXIT"] = (int(x), int(y))
+
+width = config["WIDTH"]
+height = config["HEIGHT"]
+
+grid = daedalus.create_empty_grid(width, height)
+
+# Test
+print("Created grid: ", len(grid), "rows ×", len(grid[0]), "columns")
+print("Cell (4,2):", grid[2][4]) #  Caution: cell (x,y) but grid[y][x]... 🙄
+#print("Cell (15,20):", grid[20][15]) # Correct error: leap in the dark.
+
+=== ./a_maze_ing.py ===
+#!/usr/bin/env python
+from Utils.classes import MazeGrid
+
+
+def color(message: any, tcol: tuple = (255, 255, 255),
+          bcol: tuple = None,
+          bold: bool = False, ita: bool = False, under: bool = False,
+          finish: str = '\n', f: any = None) -> None:
+    if tcol is None:
+        tcol = (255, 255, 255)
+    style = "1;" if bold else ""
+    italic = "3;" if ita else ""
+    underline = "4;" if under else ""
+    bcolor = f"48;2;{bcol[0]};{bcol[1]};{bcol[2]};" if bcol else ""
+    style = style+italic+underline+bcolor
+    if (type(message) is dict or type(message) is list):
+        for mes in message:
+            print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
+                  f"m{mes}\033[0m", end=finish, file=f)
+            print("")
+    else:
+        print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
+              f"m{message}\033[0m",
+              end=finish, file=f)
+
+
+def main() -> None:
+    maze = MazeGrid(x=10, y=8)
+    try:
+        import mlx_screen
+        mlx_screen.Screen(maze)
+    except ModuleNotFoundError:
+        color("Warning: mlx not downloaded, executing without visuals.",
+              (155, 155, 0), bold=True)
+
+
+if __name__ == "__main__":
+    main()
+
+=== ./menu.py ===
+import curses
+import random
+
+
+def generate_maze():
+    print("Generating maze...")
+
+def display_maze():
+    print("Displaying maze...")
+
+def toggle_shortest_path():
+    print("Showing / Hiding path...")
+
+def change_wall_colors():
+    print("Changing maze's colours...")
+
+def set_pattern_colors():
+    print("Changing pattern...")
+
+def quit_program():
+    print("Quit...")
+
+
+def draw_menu(stdscr):
+    curses.curs_set(0)  # no cursor
+    stdscr.clear()  # clear
+    stdscr.refresh()
+
+    menu = [
+        "1. Generate a new maze",
+        "2. Show / hide path",
+        "3. Change maze's colours",
+        "4. Change pattern's colours",
+        "5. Quit"
+    ]
+    
+    current_option = 0  # selection
+    while True:
+        # display
+        for idx, option in enumerate(menu):
+            # highlight
+            if idx == current_option:
+                stdscr.addstr(idx, 0, option, curses.A_REVERSE)
+            else:
+                stdscr.addstr(idx, 0, option)
+        
+        stdscr.refresh()
+
+        key = stdscr.getch()  # read entry
+
+        # arrows' management
+        if key == curses.KEY_DOWN:
+            current_option = (current_option + 1) % len(menu)  # go down
+        elif key == curses.KEY_UP:
+            current_option = (current_option - 1) % len(menu)  # go up
+        elif key == 10:  # enter
+            if current_option == 0:
+                generate_maze()
+            elif current_option == 1:
+                toggle_shortest_path()
+            elif current_option == 2:
+                change_wall_colors()
+            elif current_option == 3:
+                set_pattern_colors()
+            elif current_option == 4:
+                quit_program()
+                break
+        elif key == 27:  # esc
+            break
+
+        # clear
+        stdscr.clear()
+
+
+def main(stdscr):
+    draw_menu(stdscr)
+
+
+if __name__ == "__main__":
+    curses.wrapper(main)
+
+=== ./mlx_screen.py ===
+from mlx import Mlx
+from math import floor
+from Utils.classes import MazeGrid
+from Utils.func import wait
+
+mult = 100
+wait_time = 1
+
+def close_screen(key: int, self) -> None:
+    if key == 65307:
+        self.mlx.mlx_loop_exit(self.initScreen)
+
+
+def show_grid(self) -> None:
+    cell_size = int(floor(mult / 2))
+    cell_dimention = int(cell_size * 1.5)
+    maze = self.maze
+    for y in range(maze.y):
+        for x in range(maze.x):
+            posX = x * mult
+            posY = y * mult
+            pixel(0xFF0000FF, posX, posY, self, mult)
+
+    for y in range(maze.y):
+        for x in range(maze.x):
+            posX = int((x * mult) - cell_dimention / 2)
+            posY = int((y * mult) - cell_dimention / 2)
+            pixel(0xFF000099, posX + cell_size, posY + cell_size,
+                  self, cell_dimention)
+
+
+def update_cell(self, x, y) -> None:
+    maze: MazeGrid = self.maze
+    cell = maze.objects[y][x]
+
+    posX = x * mult
+    posY = y * mult
+
+    cell_size = int(floor(mult / 2))
+    cell_dimention = int(cell_size * 1.5)
+
+    if cell.N == 0:
+        pos = (int(posX - cell_dimention / 2) + cell_size)
+        pixel(0xFF000099, pos, posY - cell_size,
+              self, cell_dimention)
+    if cell.S == 0:
+        pos = (int(posX - cell_dimention / 2) + cell_size)
+        pixel(0xFF000099, pos, posY + cell_size,
+              self, cell_dimention)
+    if cell.E == 0:
+        pos = (int(posY - cell_dimention / 2) + cell_size)
+        pixel(0xFF000099, posX + cell_size, pos,
+              self, cell_dimention)
+    if cell.W == 0:
+        pos = (int(posY - cell_dimention / 2) + cell_size)
+        pixel(0xFF000099, posX + cell_size, pos,
+              self, cell_dimention)
+
+
+def pixel(color: int, nx: int, ny: int, self, size: int = mult) -> None:
+    pixel_size = size
+    image = Mlx.mlx_new_image(self.mlx, self.initScreen,
+                              pixel_size, pixel_size)
+    pixelbuff = Mlx.mlx_get_data_addr(self.mlx, image)
+    pixelbuff = list(pixelbuff)
+    for y in range(pixel_size):
+        for x in range(pixel_size):
+            pixel = (y * pixelbuff[2]) + (x * 4)
+            pixelbuff[0][pixel] = (color) & 0xFF
+            pixelbuff[0][pixel + 1] = (color >> 8) & 0xFF
+            pixelbuff[0][pixel + 2] = (color >> 16) & 0xFF
+            pixelbuff[0][pixel + 3] = (color >> 24)
+    Mlx.mlx_put_image_to_window(self.mlx, self.initScreen, self.screen,
+                                image, nx, ny)
+
+
+def render(self) -> None:
+    maze: MazeGrid = self.maze
+    for y in range(maze.y):
+        for x in range(maze.x):
+            update_cell(self, x, y)
+    from random import randint
+    roll = randint(0, 3)
+    if roll == 0:
+        maze.objects[randint(0, maze.y)][randint(0, maze.x)].N = 0
+    elif roll == 1:
+        maze.objects[randint(0, maze.y)][randint(0, maze.x)].S = 0
+    elif roll == 2:
+        maze.objects[randint(0, maze.y)][randint(0, maze.x)].E = 0
+    elif roll == 3:
+        maze.objects[randint(0, maze.y)][randint(0, maze.x)].W = 0
+    wait(wait_time)
+
+
+class Screen:
+    def __init__(self, maze: MazeGrid) -> None:
+        self.mlx = Mlx()
+        self.initScreen = self.mlx.mlx_init()
+        self.maze = maze
+        self.screen = (
+            self.mlx.mlx_new_window(
+                self.initScreen,
+                maze.x * mult,
+                maze.y * mult,
+                "A-MAZE-ING"))
+        m: Mlx = self.mlx
+        m.mlx_key_hook(self.screen, close_screen, self)
+        m.mlx_loop_hook(self.initScreen, render, self)
+        show_grid(self)
+        m.mlx_loop(self.initScreen)
 

@@ -28,7 +28,7 @@ debug:
 
 clean:
 	rm -rf $(VENV)
-	rm -rf __pycache__ .mypy_cache .pytest_cache Utils/__pycache__
+	rm -rf __pycache__ .mypy_cache .pytest_cache Utils/__pycache__ .vscode
 
 lint:
 	$(FLAKE8) .
