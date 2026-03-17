@@ -39,7 +39,30 @@ class MazePart():
         self.S: int = 1
         self.E: int = 1
         self.W: int = 1
+        self.Status = None
         self.checked: bool = False
+
+
+def check_char(char: str, cell: MazePart) -> None:
+    if char == "S":
+        cell.S = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "E":
+        cell.E = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "W":
+        cell.W = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "N":
+        cell.N = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "O":
+        cell.checked = True
+        cell.Status = 42
 
 
 class MazeGrid(BaseModel):
@@ -54,63 +77,31 @@ class MazeGrid(BaseModel):
             for x in range(self.x):
                 list.append(self.objects[y], [])
                 self.objects[y][x] = MazePart(Vector2(x=x, y=y))
-        self.make42()
+        if self.x >= 8 and self.y >= 7:
+            self.make42()
         return self
 
     def make42(self):
-        icon4 = (
-        "SS",
-        "ES",
-        "XO"
-        )
+        icon4 = ("SS",
+                 "ES",
+                 "XO")
 
-        icon2 = (
-        "ES",
-        "SW",
-        "EO"
-        )
+        icon2 = ("ES",
+                 "SW",
+                 "EO")
+
         targX = int((self.x - 4) / 2)
         targY = int((self.y - 3) / 2)
-        Xindex = 0
-        Yindex = 0
         for line in range(len(icon4)):
             for idx in range(len(icon4[line])):
                 cell = self.objects[targY + line][targX + idx]
                 char = icon4[line][idx]
-                if char == "S":
-                    cell.S = 0
-                    cell.checked = True
-                elif char == "E":
-                    cell.E = 0
-                    cell.checked = True
-                elif char == "W":
-                    cell.W = 0
-                    cell.checked = True
-                elif char == "N":
-                    cell.N = 0
-                    cell.checked = True
-                elif char == "O":
-                    cell.checked = True
+                check_char(char, cell)
         for line in range(len(icon2)):
             for idx in range(len(icon2[line])):
                 cell = self.objects[targY + line][targX + idx + 2]
                 char = icon2[line][idx]
-                if char == "S":
-                    cell.S = 0
-                    cell.checked = True
-                elif char == "E":
-                    cell.E = 0
-                    cell.checked = True
-                elif char == "W":
-                    cell.W = 0
-                    cell.checked = True
-                elif char == "N":
-                    cell.N = 0
-                    cell.checked = True
-                elif char == "O":
-                    cell.checked = True
-        
-
+                check_char(char, cell)
 
     def __len__(self):
         return f"{self.x, self.y}"

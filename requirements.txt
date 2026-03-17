@@ -2,3 +2,4 @@ flake8
 flask
 mypy
 requests
+pydantic
