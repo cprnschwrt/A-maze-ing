@@ -1,4 +1,5 @@
 from pydantic import BaseModel, model_validator
+import random
 
 
 def color(message: any, tcol: tuple = (255, 255, 255),
@@ -41,6 +42,8 @@ class MazePart():
         self.W: int = 1
         self.Status = None
         self.checked: bool = False
+        self.x = pos.x
+        self.y = pos.y
 
 
 def check_char(char: str, cell: MazePart) -> None:
@@ -105,3 +108,52 @@ class MazeGrid(BaseModel):
 
     def __len__(self):
         return f"{self.x, self.y}"
+    
+    def generate_maze(self):
+        start_cell = self.objects[0][0]
+        stack = [start_cell]
+        start_cell.Status = 1
+        print("Maze Generation Started")
+
+        for y in range(self.y):
+            for x in range(self.x):
+                self.objects[y][x].Status = 0
+                self.objects[y][x].N = 1
+                self.objects[y][x].S = 1
+                self.objects[y][x].E = 1
+                self.objects[y][x].W = 1
+
+        directions = [(0, -1, 'N'), (0, 1, 'S'), (-1, 0, 'W'), (1, 0, 'E')]
+
+        while stack:
+            current_cell = stack[-1]
+            neighbors = []
+
+            for dx, dy, direction in directions:
+                nx, ny = current_cell.x + dx, current_cell.y + dy
+                if 0 <= nx < self.x and 0 <= ny < self.y and self.objects[ny][nx].Status == 0:
+                    neighbors.append((nx, ny, direction))
+
+            if neighbors:
+                nx, ny, direction = random.choice(neighbors)
+                next_cell = self.objects[ny][nx]
+
+                if direction == 'N':
+                    current_cell.N = 0
+                    next_cell.S = 0
+                elif direction == 'S':
+                    current_cell.S = 0
+                    next_cell.N = 0
+                elif direction == 'E':
+                    current_cell.E = 0
+                    next_cell.W = 0
+                elif direction == 'W':
+                    current_cell.W = 0
+                    next_cell.E = 0
+
+                next_cell.Status = 1
+                stack.append(next_cell)
+            else:
+                stack.pop()
+
+        print("Maze Generation Finished")
