@@ -4,6 +4,7 @@ from Utils.classes import MazeGrid, Vector2
 import inspect
 from random import randint
 from Utils.characters import Characters
+from menu import close_screen
 
 primaryCol = 0xFF0000FF
 secondaryCol = 0xFF000099
@@ -37,13 +38,16 @@ def close_screen(key: int, self) -> any:
         print(key)
 
 
-def draw_button(self, label: str, x: int, y: int, width: int, height: int, button_id: int):
+def draw_button(self, label: str, x: int, y: int, width: int, height: int,
+                button_id: int):
     label_text = str(label)
-    self.mlx.mlx_string_put(self.initScreen, self.screen, x + 10, y + 10, 0xFFFFFF, label_text)
+    self.mlx.mlx_string_put(self.initScreen, self.screen, x + 10, y + 10,
+                            0xFFFFFF, label_text)
     button_color = 0x00FF00
     for i in range(width):
         for j in range(height):
-            self.mlx.mlx_pixel_put(self.initScreen, self.screen, x + i, y + j, button_color)
+            self.mlx.mlx_pixel_put(self.initScreen, self.screen, x + i, y + j,
+                                   button_color)
 
 
 def show_grid(self) -> None:
@@ -56,7 +60,8 @@ def show_grid(self) -> None:
         for x in range(maze.x):
             posX = int((x * mult) - cell_dimention / 2)
             posY = int((y * mult) - cell_dimention / 2)
-            pixel(posX + cell_size, posY + cell_size, self, cell_dimention, color=secondaryCol)
+            pixel(posX + cell_size, posY + cell_size, self, cell_dimention,
+                  color=secondaryCol)
     # draw_buttons_only(self)
 
 
@@ -193,6 +198,7 @@ def Decorate(self) -> None:
                     maze.y * mult + offsety, self, Characters.corner3,
                     offsetx, offsetx)
 
+
 class Screen:
     def __init__(self, maze: MazeGrid) -> None:
         from algo_backtrack_recursive import backtracking_recursive
@@ -200,7 +206,6 @@ class Screen:
         self.initScreen = self.mlx.mlx_init()
         self.maze = maze
         global mult
-
 
         if maze.x * mult > max_size or maze.y * mult > max_size:
             val = maze.x * mult if maze.y * mult <= max_size else maze.y * mult
@@ -242,13 +247,13 @@ class Screen:
     def mouse_hook(self, x, y, button, state):
         self.mouse_x = x
         self.mouse_y = y
-        
-    def start_generation(self):
+
+    def start_generation_seeker(self):
         print("Maze")
         self.generation_started = False
         self.func = self.mlx.mlx_loop_hook(self.initScreen, render, self)
         show_grid(self)
-    
+
     def solve_maze(self):
         pass
 

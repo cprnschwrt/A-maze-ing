@@ -25,7 +25,7 @@ def color(message: any, tcol: tuple = (255, 255, 255),
 
 
 def main() -> None:
-    maze = MazeGrid(x=10, y=10)
+    maze = MazeGrid(x=42, y=42)
     try:
         import mlx_screen
         mlx_screen.Screen(maze)

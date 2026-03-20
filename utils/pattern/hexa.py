@@ -12,8 +12,11 @@ def hexa_cell(cell) -> str:
 
 
 def binar_cell(grid, x: int, y: int, hex_val: str):
+    if x < 0 or x >= len(grid.objects) or y < 0 or y >= len(grid.objects[0]):
+        raise IndexError(f"(x={x}, y={y}) should be inside the maze.")
+
     val = int(hex_val, 16)
-    cell = grid.objects[x][y]
+    cell = grid.objects[y][x]
 
     cell.N = 1 if val & 1 else 0
     cell.E = 1 if val & 2 else 0
@@ -23,9 +26,9 @@ def binar_cell(grid, x: int, y: int, hex_val: str):
 
 def hexa_grid(grid):
     result = []
-    for x in range(grid.x):
+    for x in range(grid.y):
         row = []
-        for y in range(grid.y):
-            row.append(hexa_cell(grid.objects[x][y]))
+        for y in range(grid.x):
+            row.append(hexa_cell(grid.objects[y][x]))
         result.append("".join(row))
     return result

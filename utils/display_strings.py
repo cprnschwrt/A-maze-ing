@@ -1,6 +1,6 @@
 # import Mlx
 
-# REPRESENTATIONS 
+# REPRESENTATIONS
 # 0, 0, 0, 0
 # N, S, E ,W
 

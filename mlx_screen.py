@@ -2,7 +2,6 @@ from mlx import Mlx
 from math import floor
 from Utils.classes import MazeGrid, Vector2
 import inspect
-from random import randint
 from Utils.characters import Characters
 from menu import draw_buttons_only, close_screen
 
@@ -31,7 +30,8 @@ def show_grid(self) -> None:
         for x in range(maze.x):
             posX = int((x * mult) - cell_dimention / 2)
             posY = int((y * mult) - cell_dimention / 2)
-            pixel(posX + cell_size, posY + cell_size, self, cell_dimention, color=secondaryCol)
+            pixel(posX + cell_size, posY + cell_size, self, cell_dimention,
+                  color=secondaryCol)
     draw_buttons_only(self)
 
 
@@ -58,6 +58,7 @@ def update_cell_frame(self, x, y) -> None:
         pos = (int(posY - cell_dimention / 2) + cell_size)
         pixel(posX - cell_size, pos, self, cell_dimention, color=secondaryCol)
 
+
 def pixel_character(nx, ny, self, charList: list[str], sx, sy) -> None:
     charList = charList.value
 
@@ -66,16 +67,17 @@ def pixel_character(nx, ny, self, charList: list[str], sx, sy) -> None:
     image = Mlx.mlx_new_image(self.mlx, self.initScreen, posx, posy)
     pixelbuff = Mlx.mlx_get_data_addr(self.mlx, image)
     pixelbuff = list(pixelbuff)
-    
+
     if not charList:
-        print("Erreur : charList est vide")
         return
 
     for y in range(posy):
-        ymult = min(y // (posy // len(charList)) if len(charList) > 0 else 0, len(charList) - 1)
-        
+        ymult = min(y // (posy // len(charList)) if len(charList) > 0 else 0,
+                    len(charList) - 1)
+
         for x in range(posx):
-            xmult = min(x // (posx // len(charList[ymult])) if len(charList[ymult]) > 0 else 0, len(charList[ymult]) - 1)
+            xmult = min(x // (posx // len(charList[ymult])) if len(
+                charList[ymult]) > 0 else 0, len(charList[ymult]) - 1)
 
             if charList[ymult][xmult] == "X":
                 pixel = (y * pixelbuff[2]) + (x * 4)
@@ -90,7 +92,9 @@ def pixel_character(nx, ny, self, charList: list[str], sx, sy) -> None:
                 pixelbuff[0][pixel + 2] = (secondaryCol >> 16) & 0xFF
                 pixelbuff[0][pixel + 3] = (secondaryCol >> 24)
 
-    Mlx.mlx_put_image_to_window(self.mlx, self.initScreen, self.screen, image, nx, ny)
+    Mlx.mlx_put_image_to_window(self.mlx, self.initScreen, self.screen, image,
+                                nx, ny)
+
 
 def pixel(nx: int, ny: int, self, size: int = mult, color: int = None) -> None:
     if color is None:
@@ -112,7 +116,9 @@ def pixel(nx: int, ny: int, self, size: int = mult, color: int = None) -> None:
             pixelbuff[0][pixel + 2] = (color >> 16) & 0xFF
             pixelbuff[0][pixel + 3] = (color >> 24)
 
-    Mlx.mlx_put_image_to_window(self.mlx, self.initScreen, self.screen, image, nx + 50, ny + offsety)
+    Mlx.mlx_put_image_to_window(self.mlx, self.initScreen, self.screen,
+                                image, nx + 50, ny + offsety)
+
 
 def render(self, force: bool = False) -> None:
     global finished, steps
@@ -121,28 +127,39 @@ def render(self, force: bool = False) -> None:
         return
     if finished or not self.generation_started:
         return
-    if self.step is not None and inspect.getgeneratorstate(self.step) != "GEN_CLOSED":
+    if self.step is not None and (
+            inspect.getgeneratorstate(self.step) != "GEN_CLOSED"):
         self.step = next(self.step)
     elif self.step is None:
         print(f"Maze Finished in {steps} steps")
         finished = True
 
+
 def Decorate(self) -> None:
     maze = self.maze
     size1x = maze.x * mult + (offsetx * 2) - offsetx
-    pixel_character(0, offsety, self, Characters.up, offsetx, maze.y * mult)
-    pixel_character(size1x, offsety, self, Characters.up, offsetx, maze.y * mult)
-    pixel_character(offsetx, offsety - 50, self, Characters.side, maze.x * mult, offsetx)
-    pixel_character(offsetx, offsety - 50, self, Characters.side, maze.x * mult, offsetx)
-    pixel_character(offsetx, maze.y * mult + offsety, self, Characters.side, maze.x * mult, offsetx)
-    pixel_character(0, offsety - offsetx, self, Characters.corner1, offsetx, offsetx)
-    pixel_character(0, maze.y * mult + offsety, self, Characters.corner2, offsetx, offsetx)
-    pixel_character(size1x, offsety - offsetx, self, Characters.corner4, offsetx, offsetx)
-    pixel_character(size1x, maze.y * mult + offsety, self, Characters.corner3, offsetx, offsetx)
+    pixel_character(0, offsety, self, Characters.up, offsetx,
+                    maze.y * mult)
+    pixel_character(size1x, offsety, self, Characters.up, offsetx,
+                    maze.y * mult)
+    pixel_character(offsetx, offsety - 50, self, Characters.side,
+                    maze.x * mult, offsetx)
+    pixel_character(offsetx, offsety - 50, self, Characters.side,
+                    maze.x * mult, offsetx)
+    pixel_character(offsetx, maze.y * mult + offsety, self, Characters.side,
+                    maze.x * mult, offsetx)
+    pixel_character(0, offsety - offsetx, self, Characters.corner1, offsetx,
+                    offsetx)
+    pixel_character(0, maze.y * mult + offsety, self, Characters.corner2,
+                    offsetx, offsetx)
+    pixel_character(size1x, offsety - offsetx, self, Characters.corner4,
+                    offsetx, offsetx)
+    pixel_character(size1x, maze.y * mult + offsety, self, Characters.corner3,
+                    offsetx, offsetx)
+
 
 class Screen:
     def __init__(self, maze: MazeGrid) -> None:
-        from algo_backtrack_recursive import backtracking_recursive
         self.mlx = Mlx()
         self.initScreen = self.mlx.mlx_init()
         self.maze = maze
@@ -153,58 +170,22 @@ class Screen:
             mult = int(floor(mult * (((max_size / val))) + 1))
 
         self.screen = self.mlx.mlx_new_window(
-            self.initScreen,
-            maze.x * mult + (offsetx * 2),
-            maze.y * mult + 400 + offsety,
-            "cschwart | A-MAZE-ING | bgix"
-        )
-        self.generation_started = False
+            self.initScreen, maze.x * mult + (offsetx * 2),
+            maze.y * mult + 400 + offsety, "cschwart | A-MAZE-ING | bgix")
         self.wall_color = 0xFF0000FF
         self.cell_color = 0xFF000099
         self.mlx.mlx_key_hook(self.screen, close_screen, self)
         show_grid(self)
-
-        startpos = None
-        while True:
-            randX = randint(0, maze.x - 1)
-            randY = randint(0, maze.y - 1)
-            if maze.objects[randY][randX].Status != 42:
-                startpos = Vector2(x=randX, y=randY)
-                break
-
-        self.step = backtracking_recursive(self, maze, startpos)
-        self.func = self.mlx.mlx_loop_hook(self.initScreen, render, self)
-
         for y in range(maze.y):
             for x in range(maze.x):
                 update_cell_frame(self, x, y)
 
         self.mlx.mlx_loop(self.initScreen)
 
-    def start_generation(self):
-        if self.generation_started:
-            return
-
-        print("Maze Regeneration Started")
-
-        self.maze = MazeGrid(x=self.maze.x, y=self.maze.y)
+    def start_generation_rows(self):
         self.maze.generate_maze()
 
         print("Maze Generated")
-
-        self.generation_started = True
-        self.finished = False
-        self.steps = 0
-
-        self.func = self.mlx.mlx_loop_hook(self.initScreen, render, self)
-
-        cell_size = int(floor(mult / 2))
-        cell_dimention = int(cell_size * sizemult)
-        for y in range(self.maze.y):
-            for x in range(self.maze.x):
-                posX = int((x * mult) - cell_dimention / 2)
-                posY = int((y * mult) - cell_dimention / 2)
-                pixel(posX + cell_size, posY + cell_size, self, cell_dimention, color=secondaryCol)
 
         print("Maze Grid Redrawn")
 
@@ -216,9 +197,7 @@ class Screen:
                 update_cell_frame(self, x, y)
         print("Cell Frames Updated")
 
-        draw_buttons_only(self)
         print("Buttons Redrawn")
-
 
     def solve_maze(self):
         pass

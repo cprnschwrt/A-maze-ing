@@ -1,13 +1,15 @@
 import curses
 
+# for walking in the dungeon
+
+
 def main(stdscr):
-    # Terminal config
-    curses.noecho()          # Keys deactivation
-    curses.cbreak()          # Characters deactivation
-    stdscr.keypad(True)      # Arrows activation
+    curses.noecho()          # keys deactivation
+    curses.cbreak()          # characters deactivation
+    stdscr.keypad(True)      # arrows activation
 
     while True:
-        c = stdscr.getch()   # Instant reading of a key
+        c = stdscr.getch()   # instant reading of a key
 
         if c == curses.KEY_UP:
             stdscr.addstr("N\n")
@@ -17,14 +19,15 @@ def main(stdscr):
             stdscr.addstr("W\n")
         elif c == curses.KEY_RIGHT:
             stdscr.addstr("E\n")
-        elif c == 27:  # Esc Key
+        elif c == 27:  # Esc
             break
 
-    # Parameters restauration
+    # parameters restauration
     stdscr.keypad(False)
     curses.nocbreak()
     curses.echo()
     curses.endwin()
+
 
 if __name__ == "__main__":
     curses.wrapper(main)

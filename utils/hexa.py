@@ -10,9 +10,10 @@ def hexa_cell(cell) -> str:
         val |= 1
     return hex(val)[2:].upper()
 
+
 def binar_cell(grid, x: int, y: int, hex_val: str):
     if x < 0 or x >= len(grid.objects) or y < 0 or y >= len(grid.objects[0]):
-        raise IndexError(f"Les indices (x={x}, y={y}) sont hors de la grille.")
+        raise IndexError(f"(x={x}, y={y}) should be inside the maze.")
 
     val = int(hex_val, 16)
     cell = grid.objects[y][x]
@@ -21,6 +22,7 @@ def binar_cell(grid, x: int, y: int, hex_val: str):
     cell.E = 1 if val & 2 else 0
     cell.S = 1 if val & 4 else 0
     cell.W = 1 if val & 8 else 0
+
 
 def hexa_grid(grid):
     result = []

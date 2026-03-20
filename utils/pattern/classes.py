@@ -6,6 +6,7 @@ import random
 class Vector2(BaseModel):
     x: int
     y: int
+
     def __str__(self):
         return f"{self.x, self.y}"
 
@@ -18,6 +19,7 @@ class MazePart():
         self.S = 0
         self.E = 0
         self.W = 0
+
 
 class MazeGrid:
     def __init__(self, x: int, y: int):
@@ -124,37 +126,35 @@ pattern_width = len(pattern[0])
 
 r0, g0, b0 = random_base_colour()
 
-# Random position without overflow
+
 pattern_px = random.randint(0, grid.x - pattern_height)
 pattern_py = random.randint(0, grid.y - pattern_width)
 
-# Generate the pattern cells (list)
+
 pattern_cells = [
     (pattern_px + x, pattern_py + y)
     for x in range(len(pattern))
     for y in range(len(pattern[0]))]
 
-# Convert hexa pattern into binary
+
 for x, line in enumerate(pattern):
     for y, hex_char in enumerate(line):
         binar_cell(grid, pattern_px + x, pattern_py + y, hex_char)
 
-# Generate the grid in hexa
+
 hex_lines = hexa_grid(grid)
 
-# Print the grid
+
 for hex_x, line in enumerate(hex_lines):
     coloured_line = ""
     for hex_y, c in enumerate(line):
         if (hex_x, hex_y) in pattern_cells:
-            # Coloured pattern
             colour_var_x = hex_x - pattern_px
             colour_var_y = hex_y - pattern_py
             colour = random_gradation(
-                r0, g0, b0, 
-                colour_var_x, colour_var_y, 
-                width=len(pattern[0]), 
-                height=len(pattern))
+                r0, g0, b0,
+                colour_var_x, colour_var_y,
+                width=len(pattern[0]), height=len(pattern))
             coloured_line += f"{colour}{c}{CLR_END}"
         else:
             coloured_line += c

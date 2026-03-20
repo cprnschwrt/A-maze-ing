@@ -6,6 +6,7 @@ import random
 class Vector2(BaseModel):
     x: int
     y: int
+
     def __str__(self):
         return f"{self.x, self.y}"
 
@@ -138,10 +139,9 @@ for hx, line in enumerate(hex_lines):
             x_step = hx - motif_px
             y_step = hy - motif_py
             color = random_gradation(
-                r0, g0, b0, 
-                x_step, y_step, 
-                width=len(ft_pattern[0]), 
-                height=len(ft_pattern))
+                r0, g0, b0,
+                x_step, y_step,
+                width=len(ft_pattern[0]), height=len(ft_pattern))
             colored_line += f"{color}{c}{CLR_END}"
         else:
             colored_line += c

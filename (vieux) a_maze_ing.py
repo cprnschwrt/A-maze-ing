@@ -34,7 +34,7 @@ height = config["HEIGHT"]
 
 grid = daedalus.create_empty_grid(width, height)
 
-# Test
+# test
 print("Created grid: ", len(grid), "rows ×", len(grid[0]), "columns")
-print("Cell (4,2):", grid[2][4]) #  Caution: cell (x,y) but grid[y][x]... 🙄
-#print("Cell (15,20):", grid[20][15]) # Correct error: leap in the dark.
+print("Cell (4,2):", grid[2][4])  # Caution: cell (x,y) but grid[y][x]... 🙄
+# print("Cell (15,20):", grid[20][15]) # Correct error: leap in the dark.
