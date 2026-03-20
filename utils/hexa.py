@@ -15,7 +15,7 @@ def binar_cell(grid, x: int, y: int, hex_val: str):
         raise IndexError(f"Les indices (x={x}, y={y}) sont hors de la grille.")
 
     val = int(hex_val, 16)
-    cell = grid.objects[x][y]
+    cell = grid.objects[y][x]
 
     cell.N = 1 if val & 1 else 0
     cell.E = 1 if val & 2 else 0
@@ -24,9 +24,9 @@ def binar_cell(grid, x: int, y: int, hex_val: str):
 
 def hexa_grid(grid):
     result = []
-    for x in range(grid.x):
+    for y in range(grid.y):
         row = []
-        for y in range(grid.y):
-            row.append(hexa_cell(grid.objects[x][y]))
+        for x in range(grid.x):
+            row.append(hexa_cell(grid.objects[y][x]))
         result.append("".join(row))
     return result

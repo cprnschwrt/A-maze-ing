@@ -135,22 +135,14 @@ def Decorate(self) -> None:
     maze = self.maze
     size1x = maze.x * mult + (offsetx * 2) - offsetx
     pixel_character(0, offsety, self, Characters.up, offsetx, maze.y * mult)
-    pixel_character(size1x, offsety, self, Characters.up, offsetx,
-                    maze.y * mult)
-    pixel_character(offsetx, offsety - 50, self, Characters.side,
-                    maze.x * mult, offsetx)
-    pixel_character(offsetx, offsety - 50, self, Characters.side,
-                    maze.x * mult, offsetx)
-    pixel_character(offsetx, maze.y * mult + offsety, self, Characters.side,
-                    maze.x * mult, offsetx)
-    pixel_character(0, offsety - offsetx, self, Characters.corner1,
-                    offsetx, offsetx)
-    pixel_character(0, maze.y * mult + offsety, self, Characters.corner2,
-                    offsetx, offsetx)
-    pixel_character(size1x, offsety - offsetx, self, Characters.corner4,
-                    offsetx, offsetx)
-    pixel_character(size1x, maze.y * mult + offsety, self, Characters.corner3,
-                    offsetx, offsetx)
+    pixel_character(size1x, offsety, self, Characters.up, offsetx, maze.y * mult)
+    pixel_character(offsetx, offsety - 50, self, Characters.side, maze.x * mult, offsetx)
+    pixel_character(offsetx, offsety - 50, self, Characters.side, maze.x * mult, offsetx)
+    pixel_character(offsetx, maze.y * mult + offsety, self, Characters.side, maze.x * mult, offsetx)
+    pixel_character(0, offsety - offsetx, self, Characters.corner1, offsetx, offsetx)
+    pixel_character(0, maze.y * mult + offsety, self, Characters.corner2, offsetx, offsetx)
+    pixel_character(size1x, offsety - offsetx, self, Characters.corner4, offsetx, offsetx)
+    pixel_character(size1x, maze.y * mult + offsety, self, Characters.corner3, offsetx, offsetx)
 
 
 class Screen:
@@ -218,21 +210,16 @@ class Screen:
             for x in range(self.maze.x):
                 posX = int((x * mult) - cell_dimention / 2)
                 posY = int((y * mult) - cell_dimention / 2)
-                pixel(posX + cell_size, posY + cell_size, self, cell_dimention,
-                      color=secondaryCol)
+                pixel(posX + cell_size, posY + cell_size, self, cell_dimention, color=secondaryCol)
 
         print("Maze Grid Redrawn")
 
-        Decorate(self)
-        print("Decoration Completed")
 
-        for y in range(self.maze.y):
-            for x in range(self.maze.x):
-                update_cell_frame(self, x, y)
-        print("Cell Frames Updated")
+        # for y in range(self.maze.y):
+        #     for x in range(self.maze.x):
+        #         update_cell_frame(self, x, y)
+        # print("Cell Frames Updated")
 
-        draw_buttons_only(self)
-        print("Buttons Redrawn")
 
     def solve_maze(self):
         pass
