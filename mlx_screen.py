@@ -187,7 +187,6 @@ class Screen:
 
         print("Maze Regeneration Started")
 
-        # Générer un nouveau labyrinthe
         self.maze = MazeGrid(x=self.maze.x, y=self.maze.y)
         self.maze.generate_maze()
 
