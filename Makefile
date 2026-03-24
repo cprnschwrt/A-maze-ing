@@ -31,12 +31,12 @@ clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache Utils/__pycache__ .vscode
 
 lint:
-	$(FLAKE8) .
-	$(MYPY) . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	$(FLAKE8) . > flake8_output.log 2>&1
+	$(MYPY) . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs > mypy_output.log 2>&1
 
 lint-strict:
-	$(FLAKE8) .
-	$(MYPY) . --strict
+	$(FLAKE8) . > flake8_output.log 2>&1
+	$(MYPY) . --strict > mypy_output.log 2>&1
 
 test:
 	PYTHONPATH=$(PWD) $(PYTEST) tests

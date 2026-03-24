@@ -1,0 +1,12 @@
+max_size = 1250
+mult = 100
+offsetx = 50
+offsety = 250
+sizemult = 1.4
+primaryCol = 0xFF0000FF
+secondaryCol = 0xFF000099
+
+steps = 0
+paused = False
+finished = False
+selected_button = 0

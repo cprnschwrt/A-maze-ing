@@ -3,7 +3,7 @@ from math import floor
 from Utils.classes import MazeGrid, Vector2
 import inspect
 from Utils.characters import Characters
-from menu import draw_buttons_only, close_screen
+from menu import draw_menu, menu_manager
 
 
 primaryCol = 0xFF0000FF
@@ -32,7 +32,7 @@ def show_grid(self) -> None:
             posY = int((y * mult) - cell_dimention / 2)
             pixel(posX + cell_size, posY + cell_size, self, cell_dimention,
                   color=secondaryCol)
-    draw_buttons_only(self)
+    draw_menu(self)
 
 
 def update_cell_frame(self, x, y) -> None:
@@ -174,7 +174,7 @@ class Screen:
             maze.y * mult + 400 + offsety, "cschwart | A-MAZE-ING | bgix")
         self.wall_color = 0xFF0000FF
         self.cell_color = 0xFF000099
-        self.mlx.mlx_key_hook(self.screen, close_screen, self)
+        self.mlx.mlx_key_hook(self.screen, menu_manager, self)
         show_grid(self)
         for y in range(maze.y):
             for x in range(maze.x):

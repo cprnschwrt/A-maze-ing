@@ -1,20 +1,27 @@
+btn_y = 1800
+btn_bottom = btn_y - 50
+
 BUTTONS = [
-    {"label": "[S] Re-Generate Maze (seeker)", "x": 40, "y": 10, "width": 200,
+    {"label": "[S] Re-Generate Maze (seeker)", "x": 40, "y": btn_bottom,
+     "width": 200,
      "height": 50, "id": 1},
-    {"label": "[R] Re-Generate Maze (rows)", "x": 370, "y": 10, "width": 200,
-     "height": 50, "id": 1},
-    {"label": "[P] Show Path", "x": 680, "y": 10, "width": 200,
+    {"label": "[R] Re-Generate Maze (rows)", "x": 370, "y": btn_bottom,
+     "width": 200,
      "height": 50, "id": 2},
-    {"label": "[C] Change colours", "x": 860, "y": 10, "width": 200,
+    {"label": "[P] Show Path", "x": 680, "y": btn_bottom, "width": 200,
      "height": 50, "id": 3},
-    {"label": "[M] Change motif", "x": 1070, "y": 10, "width": 200,
-     "height": 50, "id": 4}]
+    {"label": "[C] Change colours", "x": 860, "y": btn_bottom, "width": 200,
+     "height": 50, "id": 4},
+    {"label": "[M] Change motif", "x": 1070, "y": btn_bottom, "width": 200,
+     "height": 50, "id": 5}]
 
 selected_button = 0
 
 
 def draw_button(self, label: str, x: int, y: int, width: int, height: int,
-                is_selected: bool):
+                is_selected: bool) -> None:
+    """Creates a button."""
+    
     background_color = 0xFFFFFF if is_selected else 0xFF0000
 
     for ix in range(x, x + width):
@@ -28,7 +35,9 @@ def draw_button(self, label: str, x: int, y: int, width: int, height: int,
                             text_color, label)
 
 
-def draw_buttons_only(self):
+def draw_menu(self) -> None:
+    """Displays the menu."""
+
     for i, btn in enumerate(BUTTONS):
         draw_button(
             self, btn["label"], btn["x"], btn["y"], btn["width"],
@@ -42,7 +51,9 @@ def draw_buttons_only(self):
             self.initScreen, self.screen, sep_x, sep_y, 0xFF0000, "")
 
 
-def close_screen(key: int, self) -> any:
+def menu_manager(key: int, self) -> any:
+    """Implements the commands."""
+
     global paused, selected_button
 
     if key == 65307:  # ESC
@@ -54,11 +65,11 @@ def close_screen(key: int, self) -> any:
 
     elif key == 65361:  # LEFT
         selected_button = (selected_button - 1) % len(BUTTONS)
-        draw_buttons_only(self)
+        draw_menu(self)
 
     elif key == 65363:  # RIGHT
         selected_button = (selected_button + 1) % len(BUTTONS)
-        draw_buttons_only(self)
+        draw_menu(self)
 
     elif key in (65293, 65421):  # ALPHA_ENTER, NUM_ENTER
         btn_id = BUTTONS[selected_button]["id"]
