@@ -43,7 +43,22 @@ class MazePart():
         self.checked: bool = False
 
 
-def check_char(char: str, cell: MazePart) -> None:
+def check_next(direc: str, cell: MazePart, maze: any) -> None:
+    from algo_backtrack_recursive import get_oppposite, update_cell
+    directions: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
+    x, y = cell.position.x, cell.position.y
+    direc = get_oppposite(direc)
+    targ = None
+    if direc == "N" or direc == "S":
+        targ = maze.objects[y - directions.get(direc)][x]
+    else:
+        targ = maze.objects[y][x - directions.get(direc)]
+    update_cell(targ, direc)
+    targ.Status = 42
+    targ.checked = True
+
+
+def check_char(char: str, cell: MazePart, maze: any) -> None:
     if char == "S":
         cell.S = 0
         cell.checked = True
@@ -63,6 +78,8 @@ def check_char(char: str, cell: MazePart) -> None:
     elif char == "O":
         cell.checked = True
         cell.Status = 42
+    if char != "O" and char != "X":
+        check_next(char, cell, maze)
 
 
 class MazeGrid(BaseModel):
@@ -96,12 +113,12 @@ class MazeGrid(BaseModel):
             for idx in range(len(icon4[line])):
                 cell = self.objects[targY + line][targX + idx]
                 char = icon4[line][idx]
-                check_char(char, cell)
+                check_char(char, cell, self)
         for line in range(len(icon2)):
             for idx in range(len(icon2[line])):
                 cell = self.objects[targY + line][targX + idx + 2]
                 char = icon2[line][idx]
-                check_char(char, cell)
+                check_char(char, cell, self)
 
     def __len__(self):
         return f"{self.x, self.y}"

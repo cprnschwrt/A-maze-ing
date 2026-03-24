@@ -9,6 +9,7 @@ PYTEST := $(VENV)/bin/pytest
 FLAKE8 := python3 -m flake8 .
 MYPY := python3 -m mypy .
 MAIN := a_maze_ing.py
+SETTINGS := settings.txt
 
 install:
 	@echo "Creation of the venv if necessary..."
@@ -21,14 +22,14 @@ install:
 	$(PIP) install pytest flake8 mypy
 
 run:
-	$(PYTHON) $(MAIN)
+	$(PYTHON) $(MAIN) $(SETTINGS)
 
 debug:
 	$(PYTHON) -m pdb $(MAIN)
 
 clean:
 	rm -rf $(VENV)
-	rm -rf __pycache__ .mypy_cache .pytest_cache Utils/__pycache__ .vscode
+	rm -rf __pycache__ .mypy_cache .pytest_cache Utils/__pycache__ .vscode maze.txt
 
 lint:
 	$(FLAKE8) .

@@ -1,10 +1,9 @@
 from Utils.classes import MazeGrid, MazePart, Vector2
 from random import choice
 from Utils.func import wait
-from mlx_screen import update_cell_frame
+from typing import Generator
 
-
-wait_time = 0
+wait_time = 1/60
 
 
 def check_cell(cell: MazeGrid) -> bool:
@@ -60,7 +59,7 @@ def backtracking_recursive(self, maze: MazeGrid, startingpos: Vector2,
     directions: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
     Dupdirections: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
 
-    def step() -> None:
+    def step() -> Generator[None]:
         pos = startingpos
         cell = maze.objects[pos.y][pos.x]
         cell.checked = True
@@ -74,28 +73,29 @@ def backtracking_recursive(self, maze: MazeGrid, startingpos: Vector2,
             targ = choice(list(directions.items()))
             direction, val = targ[0], targ[1]
             directions.pop(direction)
-            next: MazePart = get_cell(self, direction, pos, val)
-            if check_cell(next):
+            nextcell: MazePart = get_cell(self, direction, pos, val)
+            if check_cell(nextcell):
                 changed = True
-                newpos = next.position
+                newpos = nextcell.position
                 revdirec = update_cell(cell, direction)
+                child = backtracking_recursive(self, maze, newpos, root,
+                                               revdirec, perfect=perfect)
                 wait(wait_time)
-                update_cell_frame(self, pos.x, pos.y)
-                yield backtracking_recursive(self, maze, newpos, root,
-                                             revdirec)
-
+                yield child
+                if child is not None:
+                    child.close()
         if comefrom is not None and changed is False:
             tmpcell = get_cell(self, get_oppposite(comefrom), pos,
                                Dupdirections.get(get_oppposite(comefrom)))
             if perfect is False \
                     and tmpcell is not None \
-                    and not check_cell(tmpcell) \
                     and not tmpcell.Status == 42:
                 update_cell(cell, get_oppposite(comefrom))
-                update_cell_frame(self, pos.x, pos.y)
-        yield parent
-        if parent:
-            parent.close()
+                update_cell(tmpcell, comefrom)
+        if parent is not None:
+            yield parent
+        else:
+            yield None
 
     root = step()
     return root
