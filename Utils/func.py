@@ -2,7 +2,8 @@ import time
 from math import sqrt
 
 
-def to_colhex(r, g, b, a: int = 255) -> int:
+def to_colhex(r: int | float, g: int | float,
+              b: int | float, a: int | float = 255) -> int:
     r = int(r)
     g = int(g)
     b = int(b)
@@ -15,7 +16,7 @@ def to_colhex(r, g, b, a: int = 255) -> int:
     return (color)
 
 
-def magnitude(x1, y1, x2, y2) -> int:
+def magnitude(x1: int, y1: int, x2: int, y2: int) -> int:
     val = (x2 - x1)**2 + (y2 - y1)**2
     if val < 0:
         val *= -1
@@ -23,13 +24,13 @@ def magnitude(x1, y1, x2, y2) -> int:
     return val if val >= 0 else val * -1
 
 
-def funny_magnitude(x1, y1, x2, y2) -> int:
+def funny_magnitude(x1: int, y1: int, x2: int, y2: int) -> int:
     val = (int(sqrt((x1 * x1 + y1 * y1)) -
                sqrt((x2 * x2 + y2 * y2))))
     return val
 
 
-def wait(val: int) -> None:
+def wait(val: int | float) -> None:
     start = time.time()
     while (time.time() - start < val):
         pass

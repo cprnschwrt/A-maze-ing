@@ -1,12 +1,12 @@
 from Utils.classes import MazeGrid, MazePart, Vector2
 from random import choice
 from Utils.func import wait
-from typing import Generator
+from typing import Generator, Any
 
 wait_time = 1/60
 
 
-def check_cell(cell: MazeGrid) -> bool:
+def check_cell(cell: MazePart) -> bool:
     if cell is None:
         return False
     elif cell.checked is True:
@@ -27,9 +27,10 @@ def update_cell(cell: MazePart, target: str) -> str:
     elif target == "W":
         cell.W = 0
         return "E"
+    return ""
 
 
-def get_oppposite(target):
+def get_oppposite(target: str) -> str:
     if target == "N":
         return "S"
     elif target == "S":
@@ -38,9 +39,10 @@ def get_oppposite(target):
         return "W"
     elif target == "W":
         return "E"
+    return ""
 
 
-def get_cell(self, direction: str, position: Vector2, val: int) -> any:
+def get_cell(self: Any, direction: str, position: Vector2, val: Any) -> Any:
     next = None
     pos = position
     if direction == "N" or direction == "S":
@@ -54,10 +56,11 @@ def get_cell(self, direction: str, position: Vector2, val: int) -> any:
     return (next)
 
 
-def backtracking_recursive(self, maze: MazeGrid, startingpos: Vector2,
-                           parent=None, comefrom=None, perfect=False) -> None:
+def backtracking_recursive(self: Any, maze: MazeGrid, startingpos: Vector2,
+                           parent: Any = None, comefrom: str | None = None,
+                           perfect: bool = False) -> Any:
     directions: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
-    Dupdirections: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
+    Dupdirections: dict[str, int] = {"N": -1, "S": 1, "E": 1, "W": -1}
 
     def step() -> Generator[None]:
         pos = startingpos

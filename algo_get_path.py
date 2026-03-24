@@ -1,12 +1,14 @@
 from Utils.classes import MazeGrid, MazePart
 from algo_backtrack_recursive import get_oppposite
-directions: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
+from typing import Any
+directions: dict[str, int] = {"N": -1, "S": 1, "E": 1, "W": -1}
 
 
 def get_shortest_path(maze: MazeGrid, position: list[int],
-                      target: list[int], trail: list[MazePart] = [],
-                      origin: str = None, current_path: str = "",
-                      current: list[MazePart] = None, path: str = "") -> None:
+                      target: list[int], trail: list[list[int]] = [],
+                      origin: str = "", current_path: str = "",
+                      current: list[MazePart] | None = None,
+                      path: str = "") -> Any:
     cell = maze.objects[position[1]][position[0]]
     for val in trail:
         if val == position:
@@ -16,15 +18,15 @@ def get_shortest_path(maze: MazeGrid, position: list[int],
         return current, current_path
     if position == target:
         return trail, path
-    re = None
-    fpath = None
+    re: list[MazePart] | None = None
+    fpath = ""
     for key in directions:
+        value: int = directions.get(key) or 0
         if cell.__dict__.get(key) == 0 and key != get_oppposite(origin):
             temp_path = path + key
             if key == "E" or key == "W":
                 re, fpath = get_shortest_path(maze,
-                                              [position[0] +
-                                               directions.get(key),
+                                              [position[0] + value,
                                                position[1]], target,
                                               trail.copy(), key, current_path,
                                               current,
@@ -32,12 +34,11 @@ def get_shortest_path(maze: MazeGrid, position: list[int],
             if key == "S" or key == "N":
                 re, fpath = get_shortest_path(maze,
                                               [position[0],
-                                               position[1] +
-                                               directions.get(key)], target,
+                                               position[1] + value], target,
                                               trail.copy(), key, current_path,
                                               current,
                                               temp_path)
             if re is not None:
                 current = re
                 current_path = fpath
-    return current, current_path
+    return [current, current_path]

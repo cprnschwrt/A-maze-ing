@@ -3,43 +3,16 @@ from math import floor
 from Utils.classes import MazeGrid, Vector2
 import inspect
 from random import randint, seed
-from Utils.characters import Characters
+from Utils.MlxChars import Characters
 from Utils.func import to_colhex, magnitude
 import Utils.hexa as hexa
 from algo_get_path import get_shortest_path
+from typing import Any
 
 
-def is_mouse_on_button(self, mouse_x, mouse_y, button_x,
-                       button_y, button_width, button_height):
-    if button_x <= mouse_x <= button_x + button_width and \
-            button_y <= mouse_y <= button_y + button_height:
-        return True
-    return False
-
-
-def draw_button(self, label: str, x: int, y: int,
-                width: int, height: int, button_id: int):
-    label_text = str(label)
-    self.mlx.mlx_string_put(self.initScreen, self.screen,
-                            x + 10, y + 10, 0xFFFFFF, label_text)
-
-    button_color = 0x00FF00
-    if is_mouse_on_button(self, self.mouse_x, self.mouse_y,
-                          x, y, width, height):
-        button_color = 0x0000FF
-
-    for i in range(width):
-        for j in range(height):
-            self.mlx.mlx_pixel_put(self.initScreen, self.screen,
-                                   x + i, y + j, button_color)
-
-    if is_mouse_on_button(self, self.mouse_x, self.mouse_y,
-                          x, y, width, height):
-        self.hover_button(button_id)
-
-
-def pixel_character(nx, ny, self, charList: list[str], sx, sy) -> None:
-    charList = charList.value
+def pixel_character(nx: int, ny: int, self: Any,
+                    charList: Characters, sx: int, sy: int) -> None:
+    tabs = list(charList.value)
     posx, posy = sx, sy
     image = Mlx.mlx_new_image(self.mlx, self.initScreen,
                               posx, posy)
@@ -48,12 +21,12 @@ def pixel_character(nx, ny, self, charList: list[str], sx, sy) -> None:
     ymult = 0
     for y in range(posy):
         xmult = 0
-        if y >= (posy / len(charList)) * ymult:
+        if y >= (posy / len(tabs)) * ymult:
             ymult += 1
         for x in range(posx):
-            if x >= (posx / len(charList[ymult - 1])) * xmult:
+            if x >= (posx / len(tabs[ymult - 1])) * xmult:
                 xmult += 1
-            if charList[ymult - 1][xmult - 1] == "X":
+            if tabs[ymult - 1][xmult - 1] == "X":
                 pixel = (y * pixelbuff[2]) + (x * 4)
                 pixelbuff[0][pixel] = (self.primaryCol) & 0xFF
                 pixelbuff[0][pixel + 1] = (self.primaryCol >> 8) & 0xFF
@@ -70,7 +43,7 @@ def pixel_character(nx, ny, self, charList: list[str], sx, sy) -> None:
                                 image, nx, ny)
 
 
-def render(self, force: bool = False, Kill: bool = False) -> None:
+def render(self: Any, force: bool = False, Kill: bool = False) -> None:
     self.steps += 1
     if self.paused is True and force is not True and Kill is False:
         return
@@ -106,59 +79,6 @@ def render(self, force: bool = False, Kill: bool = False) -> None:
             file.write(f"{path}\n")
 
 
-def Decorate(self) -> None:
-    maze = self.maze
-    size1x = maze.x * self.mult + (self.offsetx * 2) - self.offsetx
-    posend = maze.y * self.mult + self.offsety + 400 - self.offsetx
-
-    pixel_character(0, 0, self, Characters.up, self.offsetx,
-                    maze.y * self.mult + self.offsety + 400)
-    pixel_character(size1x,
-                    0, self, Characters.up, self.offsetx,
-                    maze.y * self.mult + self.offsety + 400)
-    pixel_character(self.offsetx,
-                    self.offsety - 50, self, Characters.side,
-                    maze.x * self.mult,
-                    self.offsetx)
-    pixel_character(self.offsetx,
-                    self.offsety - 50, self, Characters.side,
-                    maze.x * self.mult,
-                    self.offsetx)
-    pixel_character(self.offsetx,
-                    maze.y * self.mult + self.offsety, self, Characters.side,
-                    maze.x * self.mult, self.offsetx)
-
-    pixel_character(0,
-                    self.offsety - self.offsetx, self, Characters.tcorner1,
-                    self.offsetx, self.offsetx)
-    pixel_character(0,
-                    maze.y * self.mult + self.offsety, self,
-                    Characters.tcorner1,
-                    self.offsetx, self.offsetx)
-
-    pixel_character(size1x,
-                    self.offsety - self.offsetx, self, Characters.tcorner3,
-                    self.offsetx, self.offsetx)
-    pixel_character(size1x,
-                    maze.y * self.mult + self.offsety, self,
-                    Characters.tcorner3,
-                    self.offsetx, self.offsetx)
-
-    pixel_character(0, posend, self, Characters.side,
-                    maze.x * self.mult + self.offsetx, self.offsetx)
-    pixel_character(0, posend, self, Characters.corner2,
-                    self.offsetx, self.offsetx)
-    pixel_character(size1x, posend, self, Characters.corner3,
-                    self.offsetx, self.offsetx)
-
-    pixel_character(0, 0, self, Characters.side,
-                    maze.x * self.mult + self.offsetx, self.offsetx)
-    pixel_character(0, 0, self, Characters.corner1,
-                    self.offsetx, self.offsetx)
-    pixel_character(size1x, 0, self, Characters.corner4,
-                    self.offsetx, self.offsetx)
-
-
 class Screen:
     def __init__(self, maze: MazeGrid, settings: dict) -> None:
         from algo_backtrack_recursive import backtracking_recursive
@@ -168,20 +88,20 @@ class Screen:
         self.settings = settings
         self.mult = 100
         self.max_size = 1250
-        self.pixelbuff = None
+        self.pixelbuff: Any | list[Any] = None
         self.solved = False
         self.maze_image = None
         self.offsety = 250
-        self.primaryCol = None
-        self.secondaryCol = None
-        self.tertiaryCol = None
+        self.primaryCol: int = 0
+        self.secondaryCol: int = 0
+        self.tertiaryCol: int = 0
         self.colorIndex = 0
         self.steps = 0
         self.paused = False
         self.finished = False
         self.border_size = 10 * 2
         self.offsetx = 50
-        self.maze_hex = []
+        self.maze_hex: list[str] = []
         self.change_color()
         try:
             seed(settings["seed"])
@@ -231,18 +151,16 @@ class Screen:
                 maze.y * self.mult + 400 + self.offsety,
                 "cschwart | A-MAZE-ING | bgix    "))
         for y in range(self.maze.y):
-            self.maze_hex.append([])
-            self.maze_hex[y] = ""
+            self.maze_hex.append("")
             for x in range(self.maze.x):
                 self.maze_hex[y] += "0"
-        m: Mlx = self.mlx
         self.mouse_x = 0
         self.x = maze.x * self.mult
         self.y = maze.y * self.mult
         self.mouse_y = 0
         self.generation_started = True
 
-        self.lights = [Vector2(x=self.x/2, y=self.y/2),
+        self.lights = [Vector2(x=int(self.x/2), y=int(self.y/2)),
                        Vector2(x=0, y=0), Vector2(x=self.x, y=0),
                        Vector2(x=self.x, y=self.y), Vector2(x=0, y=self.y)]
 
@@ -250,7 +168,6 @@ class Screen:
         self.cell_color = 0xFF000099
         m: Mlx = self.mlx
         m.mlx_key_hook(self.screen, self.close_screen, self)
-        m.mlx_mouse_hook(self.screen, self.mouse_hook, self)
         startpos = None
 
         try:
@@ -270,29 +187,64 @@ class Screen:
         self.func = m.mlx_loop_hook(self.initScreen, render, self)
         m.mlx_key_hook(self.screen, self.close_screen, self)
         print(f"\nSeed: {self.seed}")
-        Decorate(self)
+        self.Decorate()
         self.refresh(redo=True)
         m.mlx_loop(self.initScreen)
 
-    def mouse_hook(self, x, y, button, state):
-        self.mouse_x = x
-        self.mouse_y = y
+    def Decorate(self) -> None:
+        maze = self.maze
+        size1x = maze.x * self.mult + (self.offsetx * 2) - self.offsetx
+        posend = maze.y * self.mult + self.offsety + 400 - self.offsetx
 
-        if button == 1:
-            if is_mouse_on_button(self, x, y, 10, 10, 200, 50):
-                self.start_generation()
-            elif is_mouse_on_button(self, x, y, 200, 10, 200, 50):
-                self.solve_maze()
-            elif is_mouse_on_button(self, x, y, 300, 10, 200, 50):
-                self.change_colours()
-            elif is_mouse_on_button(self, x, y, 500, 10, 200, 50):
-                self.change_pattern()
+        pixel_character(0, 0, self, Characters.up, self.offsetx,
+                        maze.y * self.mult + self.offsety + 400)
+        pixel_character(size1x,
+                        0, self, Characters.up, self.offsetx,
+                        maze.y * self.mult + self.offsety + 400)
+        pixel_character(self.offsetx,
+                        self.offsety - 50, self, Characters.side,
+                        maze.x * self.mult,
+                        self.offsetx)
+        pixel_character(self.offsetx,
+                        self.offsety - 50, self, Characters.side,
+                        maze.x * self.mult,
+                        self.offsetx)
+        pixel_character(self.offsetx,
+                        maze.y * self.mult + self.offsety, self,
+                        Characters.side,
+                        maze.x * self.mult, self.offsetx)
 
-    def start_generation(self):
-        self.generation_started = False
-        self.func = self.mlx.mlx_loop_hook(self.initScreen, render, self)
+        pixel_character(0,
+                        self.offsety - self.offsetx, self, Characters.tcorner1,
+                        self.offsetx, self.offsetx)
+        pixel_character(0,
+                        maze.y * self.mult + self.offsety, self,
+                        Characters.tcorner1,
+                        self.offsetx, self.offsetx)
 
-    def solve_maze(self):
+        pixel_character(size1x,
+                        self.offsety - self.offsetx, self, Characters.tcorner3,
+                        self.offsetx, self.offsetx)
+        pixel_character(size1x,
+                        maze.y * self.mult + self.offsety, self,
+                        Characters.tcorner3,
+                        self.offsetx, self.offsetx)
+
+        pixel_character(0, posend, self, Characters.side,
+                        maze.x * self.mult + self.offsetx, self.offsetx)
+        pixel_character(0, posend, self, Characters.corner2,
+                        self.offsetx, self.offsetx)
+        pixel_character(size1x, posend, self, Characters.corner3,
+                        self.offsetx, self.offsetx)
+
+        pixel_character(0, 0, self, Characters.side,
+                        maze.x * self.mult + self.offsetx, self.offsetx)
+        pixel_character(0, 0, self, Characters.corner1,
+                        self.offsetx, self.offsetx)
+        pixel_character(size1x, 0, self, Characters.corner4,
+                        self.offsetx, self.offsetx)
+
+    def solve_maze(self) -> None:
         col3 = self.tertiaryCol if self.solved is False else self.secondaryCol
         maze: MazeGrid = self.maze
         cell_size = self.mult
@@ -357,8 +309,7 @@ class Screen:
         self.step = backtracking_recursive(self, self.maze, self.startpos,
                                            None, None, perfect=self.perfect)
         for y in range(self.maze.y):
-            self.maze_hex.append([])
-            self.maze_hex[y] = ""
+            self.maze_hex.append("")
             for x in range(self.maze.x):
                 self.maze_hex[y] += "0"
         self.steps = 0
@@ -366,13 +317,6 @@ class Screen:
         self.refresh(redo=True)
         self.finished = False
         self.paused = False
-
-    def change_colours(self):
-        self.wall_color = 0x00FF00
-        self.cell_color = 0x0000FF
-
-    def change_pattern(self):
-        pass
 
     def refresh(self, redo: int = False) -> None:
         col1 = self.primaryCol
@@ -536,7 +480,8 @@ class Screen:
                                     self.maze_image, self.offsetx,
                                     self.offsety)
 
-    def fill_image(self, pixelbuff: int, px, py, sx, sy, col: int) -> None:
+    def fill_image(self, pixelbuff: list[Any], px: Any,
+                   py: Any, sx: Any, sy: Any, col: int) -> None:
         r, g, b = (col >> 16) & 0xFF, (col >> 8) & 0xFF, (col >> 00) & 0xFF
         lightrange = 600
         px = int(px)
@@ -567,7 +512,7 @@ class Screen:
                 pixelbuff[0][pixel + 3] = (pixel_color >> 24) & 0xFF
 
     @staticmethod
-    def close_screen(key: int, self) -> any:
+    def close_screen(key: int, self: Any) -> Any:
         if key == 65307:
             self.mlx.mlx_loop_exit(self.initScreen)
         elif key == 112:
@@ -587,7 +532,7 @@ class Screen:
         elif key == 99:
             self.change_color()
             self.refresh(True)
-            Decorate(self)
+            self.Decorate()
         elif key == 115:
             self.solve_maze()
         else:

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 from Utils.classes import MazeGrid
 from sys import argv
+from typing import Any
 
 
-def parse_configs():
+def parse_configs() -> dict:
     configs: dict = dict()
     key = ""
-    val = 0
+    val: Any = 0
     iskey = True
     active = True
     with open(argv[1], "r") as settings:
@@ -59,7 +60,7 @@ def main() -> None:
     settings = parse_configs()
     x, y = 20, 20
     try:
-        x = settings["height"],
+        x = settings["height"]
     except KeyError:
         pass
 

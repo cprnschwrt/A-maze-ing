@@ -1,33 +1,12 @@
 from pydantic import BaseModel, model_validator
-
-
-def color(message: any, tcol: tuple = (255, 255, 255),
-          bcol: tuple = None,
-          bold: bool = False, ita: bool = False, under: bool = False,
-          finish: str = '\n', f: any = None) -> None:
-    if tcol is None:
-        tcol = (255, 255, 255)
-    style = "1;" if bold else ""
-    italic = "3;" if ita else ""
-    underline = "4;" if under else ""
-    bcolor = f"48;2;{bcol[0]};{bcol[1]};{bcol[2]};" if bcol else ""
-    style = bcolor+style+italic+underline
-    if (type(message) is dict or type(message) is list):
-        for mes in message:
-            print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
-                  f"m{mes}\033[0m", end=finish, file=f)
-            print("")
-    else:
-        print(f"\033[{style}38;2;{tcol[0]};{tcol[1]};{tcol[2]}"
-              f"m{message}\033[0m",
-              end=finish, file=f)
+from typing import Any
 
 
 class Vector2(BaseModel):
     x: int
     y: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.x, self.y}"
 
 
@@ -39,26 +18,27 @@ class MazePart():
         self.S: int = 1
         self.E: int = 1
         self.W: int = 1
-        self.Status = None
+        self.Status: str | None | int = None
         self.checked: bool = False
 
 
-def check_next(direc: str, cell: MazePart, maze: any) -> None:
+def check_next(direc: str, cell: MazePart, maze: Any) -> None:
     from algo_backtrack_recursive import get_oppposite, update_cell
     directions: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
     x, y = cell.position.x, cell.position.y
     direc = get_oppposite(direc)
     targ = None
+    dir = directions.get(direc) or 0
     if direc == "N" or direc == "S":
-        targ = maze.objects[y - directions.get(direc)][x]
+        targ = maze.objects[y - dir][x]
     else:
-        targ = maze.objects[y][x - directions.get(direc)]
+        targ = maze.objects[y][x - dir]
     update_cell(targ, direc)
     targ.Status = 42
     targ.checked = True
 
 
-def check_char(char: str, cell: MazePart, maze: any) -> None:
+def check_char(char: str, cell: MazePart, maze: Any) -> None:
     if char == "S":
         cell.S = 0
         cell.checked = True
@@ -88,7 +68,7 @@ class MazeGrid(BaseModel):
     objects: list = []
 
     @model_validator(mode="after")
-    def start(self):
+    def start(self: Any) -> Any:
         for y in range(self.y):
             list.append(self.objects, [])
             for x in range(self.x):
@@ -98,7 +78,7 @@ class MazeGrid(BaseModel):
             self.make42()
         return self
 
-    def make42(self):
+    def make42(self: Any) -> None:
         icon4 = ("SS",
                  "ES",
                  "XO")
@@ -120,5 +100,5 @@ class MazeGrid(BaseModel):
                 char = icon2[line][idx]
                 check_char(char, cell, self)
 
-    def __len__(self):
-        return f"{self.x, self.y}"
+    def __len__(self: Any) -> Any:
+        return self.x * self.y

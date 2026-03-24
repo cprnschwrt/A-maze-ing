@@ -1,4 +1,7 @@
-def hexa_cell(cell) -> str:
+from .classes import MazeGrid, MazePart
+
+
+def hexa_cell(cell: MazePart) -> str:
     val = 0
     if cell.W:
         val |= 8
@@ -11,7 +14,7 @@ def hexa_cell(cell) -> str:
     return hex(val)[2:].upper()
 
 
-def binar_cell(grid, x: int, y: int, hex_val: str):
+def binar_cell(grid: MazeGrid, x: int, y: int, hex_val: str) -> None:
     if x < 0 or x >= len(grid.objects) or y < 0 or y >= len(grid.objects[0]):
         raise IndexError(f"Les indices (x={x}, y={y}) sont hors de la grille.")
 
@@ -24,7 +27,7 @@ def binar_cell(grid, x: int, y: int, hex_val: str):
     cell.W = 1 if val & 8 else 0
 
 
-def hexa_grid(grid):
+def hexa_grid(grid: MazeGrid) -> list[str]:
     result = []
     for y in range(grid.y):
         row = []
