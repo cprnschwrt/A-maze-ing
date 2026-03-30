@@ -25,7 +25,7 @@ class MazePart():
 class MazeGrid(BaseModel):
     x: int
     y: int
-    objects: list[list[MazePart]] = []
+    objects: list[Any] = []
 
     @model_validator(mode="after")
     def start(self: Any) -> Any:
