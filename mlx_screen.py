@@ -12,33 +12,42 @@ from typing import Any
 
 def pixel_character(nx: int, ny: int, self: Any,
                     charList: Characters, sx: int, sy: int) -> None:
-    tabs = list(charList.value)
     posx, posy = sx, sy
     image = Mlx.mlx_new_image(self.mlx, self.initScreen,
                               posx, posy)
     pixelbuff = Mlx.mlx_get_data_addr(self.mlx, image)
     pixelbuff = list(pixelbuff)
-    ymult = 0
-    for y in range(posy):
-        xmult = 0
-        if y >= (posy / len(tabs)) * ymult:
-            ymult += 1
-        for x in range(posx):
-            if x >= (posx / len(tabs[ymult - 1])) * xmult:
-                xmult += 1
-            if tabs[ymult - 1][xmult - 1] == "X":
+    if charList.value is not None:
+        tabs = list(charList.value)
+        ymult = 0
+        for y in range(posy):
+            xmult = 0
+            if y >= (posy / len(tabs)) * ymult:
+                ymult += 1
+            for x in range(posx):
+                if x >= (posx / len(tabs[ymult - 1])) * xmult:
+                    xmult += 1
+                if tabs[ymult - 1][xmult - 1] == "X":
+                    pixel = (y * pixelbuff[2]) + (x * 4)
+                    pixelbuff[0][pixel] = (self.primaryCol) & 0xFF
+                    pixelbuff[0][pixel + 1] = (self.primaryCol >> 8) & 0xFF
+                    pixelbuff[0][pixel + 2] = (self.primaryCol >> 16) & 0xFF
+                    pixelbuff[0][pixel + 3] = (self.primaryCol >> 24)
+                else:
+                    pixel = (y * pixelbuff[2]) + (x * 4)
+                    pixelbuff[0][pixel] = (self.secondaryCol) & 0xFF
+                    pixelbuff[0][pixel + 1] = (self.secondaryCol >> 8) & 0xFF
+                    pixelbuff[0][pixel + 2] = (self.secondaryCol >> 16) & 0xFF
+                    pixelbuff[0][pixel + 3] = (self.secondaryCol >> 24)
+    else:
+        col = self.tertiaryCol
+        for y in range(posy):
+            for x in range(posx):
                 pixel = (y * pixelbuff[2]) + (x * 4)
-                pixelbuff[0][pixel] = (self.primaryCol) & 0xFF
-                pixelbuff[0][pixel + 1] = (self.primaryCol >> 8) & 0xFF
-                pixelbuff[0][pixel + 2] = (self.primaryCol >> 16) & 0xFF
-                pixelbuff[0][pixel + 3] = (self.primaryCol >> 24)
-            else:
-                pixel = (y * pixelbuff[2]) + (x * 4)
-                pixelbuff[0][pixel] = (self.secondaryCol) & 0xFF
-                pixelbuff[0][pixel + 1] = (self.secondaryCol >> 8) & 0xFF
-                pixelbuff[0][pixel + 2] = (self.secondaryCol >> 16) & 0xFF
-                pixelbuff[0][pixel + 3] = (self.secondaryCol >> 24)
-
+                pixelbuff[0][pixel] = (col) & 0xFF
+                pixelbuff[0][pixel + 1] = (col >> 8) & 0xFF
+                pixelbuff[0][pixel + 2] = (col >> 16) & 0xFF
+                pixelbuff[0][pixel + 3] = (col >> 24)
     Mlx.mlx_put_image_to_window(self.mlx, self.initScreen, self.screen,
                                 image, nx, ny)
 
@@ -53,12 +62,10 @@ def render(self: Any, force: bool = False, Kill: bool = False) -> None:
     if Kill is True or (self.step is not None
        and inspect.getgeneratorstate(self.step) != "GEN_CLOSED"):
         status = inspect.getgeneratorstate(self.step)
-        if Kill is True and status == "GEN_CLOSED":
-            self.step.close()
-            self.step = None
-        elif status != "GEN_CLOSED" and self.step is not None:
+        if status != "GEN_CLOSED" and self.step is not None:
             self.step = next(self.step)
             self.refresh(self)
+            self.update_loading()
 
     elif self.step is None:
         print(f"Maze finished in {self.steps} steps, Calculating Path...")
@@ -69,6 +76,7 @@ def render(self: Any, force: bool = False, Kill: bool = False) -> None:
         for pos in cells:
             self.maze.objects[pos[1]][pos[0]].Status = "path"
         print("Done !")
+        self.update_loading()
         hex = hexa.hexa_grid(self.maze)
         with open(self.output, "w") as file:
             for line in hex:
@@ -85,6 +93,8 @@ class Screen:
         self.mlx = Mlx()
         self.initScreen = self.mlx.mlx_init()
         self.maze = maze
+        self.total_count: int = int(maze.x * maze.y)
+        self.count = -1
         self.settings = settings
         self.mult = 100
         self.max_size = 1250
@@ -92,6 +102,7 @@ class Screen:
         self.solved = False
         self.maze_image = None
         self.offsety = 250
+        self.load: int = 0
         self.primaryCol: int = 0
         self.secondaryCol: int = 0
         self.tertiaryCol: int = 0
@@ -139,11 +150,31 @@ class Screen:
         except KeyError:
             self.skip = False
 
+        if (self.entry[0] > maze.x or
+                self.entry[1] > maze.y):
+            print("Invalid Entry Point ! Exit is out of bound.")
+            return
+        elif (self.exit[0] > maze.x or
+                self.exit[1] > maze.y):
+            print("Invalid Exit Point ! Exit is out of bound.")
+            return
+        elif (maze.objects[self.entry[1]][self.entry[0]].Status == 42):
+            print("Invalid Entry Point ! Position conflict with 42 icon.")
+            return
+        elif (maze.objects[self.exit[1]][self.exit[0]].Status == 42):
+            print("Invalid Exit Point ! Position conflict with 42 icon.")
+            return
+        elif (self.entry[0] == self.exit[0] and self.entry[1] == self.exit[1]):
+            print("Invalid Exit And Entry Point ! "
+                  "Position conflict with each others.")
+            return
+
         if maze.x * self.mult > self.max_size or\
                 maze.y * self.mult > self.max_size:
             val = maze.x * self.mult if maze.y * self.mult <= self.max_size \
                     else maze.y * self.mult
             self.mult = int(floor(self.mult * (((self.max_size / val))) + 1))
+
         self.screen = (
             self.mlx.mlx_new_window(
                 self.initScreen,
@@ -155,8 +186,8 @@ class Screen:
             for x in range(self.maze.x):
                 self.maze_hex[y] += "0"
         self.mouse_x = 0
-        self.x = maze.x * self.mult
-        self.y = maze.y * self.mult
+        self.x = int(maze.x * self.mult)
+        self.y = int(maze.y * self.mult)
         self.mouse_y = 0
         self.generation_started = True
 
@@ -167,7 +198,6 @@ class Screen:
         self.wall_color = 0xFF0000FF
         self.cell_color = 0xFF000099
         m: Mlx = self.mlx
-        m.mlx_key_hook(self.screen, self.close_screen, self)
         startpos = None
 
         try:
@@ -191,11 +221,38 @@ class Screen:
         self.refresh(redo=True)
         m.mlx_loop(self.initScreen)
 
+    def draw_wallpaper(self, col: int = 0xFFFFFFFF,
+                       px: int | float = 0, py: int | float = 0) -> None:
+        maze = self.maze
+        divider = None
+        mult = 100
+        while divider is None or divider != floor(divider):
+            divider = mult / 2
+            mult -= 1
+        divider = int(divider)
+        size_x = (maze.x * self.mult + self.offsetx * 2) / divider
+        size_y = (maze.y * self.mult + 400 + self.offsety) / divider
+        line_size = 4
+        for x in range(divider):
+            for y in range(divider):
+                addx = int(x * size_x) + px
+                addy = int(y * size_y) + py
+                self.draw_line(addx + size_x / 2, addy, addx,
+                               addy + size_y/2, line_size, col)
+                self.draw_line(addx + size_x / 2, addy, addx + size_x,
+                               addy + size_y/2, line_size, col)
+                self.draw_line(addx + size_x / 2, addy + size_y, addx,
+                               addy + size_y/2, line_size, col)
+                self.draw_line(addx + size_x / 2, addy + size_y, addx + size_x,
+                               addy + size_y/2, line_size, col)
+
     def Decorate(self) -> None:
         maze = self.maze
         size1x = maze.x * self.mult + (self.offsetx * 2) - self.offsetx
         posend = maze.y * self.mult + self.offsety + 400 - self.offsetx
 
+        self.draw_wallpaper(0xFF000033, 11, 0)
+        self.draw_wallpaper(0xFF000044)
         pixel_character(0, 0, self, Characters.up, self.offsetx,
                         maze.y * self.mult + self.offsety + 400)
         pixel_character(size1x,
@@ -203,22 +260,26 @@ class Screen:
                         maze.y * self.mult + self.offsety + 400)
         pixel_character(self.offsetx,
                         self.offsety - 50, self, Characters.side,
-                        maze.x * self.mult,
+                        self.x,
                         self.offsetx)
         pixel_character(self.offsetx,
                         self.offsety - 50, self, Characters.side,
-                        maze.x * self.mult,
+                        self.x,
                         self.offsetx)
         pixel_character(self.offsetx,
-                        maze.y * self.mult + self.offsety, self,
+                        self.y + self.offsety, self,
                         Characters.side,
-                        maze.x * self.mult, self.offsetx)
+                        self.x, self.offsetx)
+        pixel_character(self.offsetx,
+                        maze.y * self.mult + self.offsety + 100, self,
+                        Characters.side,
+                        self.x, self.offsetx)
 
         pixel_character(0,
                         self.offsety - self.offsetx, self, Characters.tcorner1,
                         self.offsetx, self.offsetx)
         pixel_character(0,
-                        maze.y * self.mult + self.offsety, self,
+                        self.y + self.offsety, self,
                         Characters.tcorner1,
                         self.offsetx, self.offsetx)
 
@@ -226,19 +287,31 @@ class Screen:
                         self.offsety - self.offsetx, self, Characters.tcorner3,
                         self.offsetx, self.offsetx)
         pixel_character(size1x,
-                        maze.y * self.mult + self.offsety, self,
+                        self.y + self.offsety, self,
                         Characters.tcorner3,
                         self.offsetx, self.offsetx)
+        pixel_character(0,
+                        self.y + self.offsety + 100, self,
+                        Characters.tcorner1,
+                        self.offsetx, self.offsetx)
+        pixel_character(size1x,
+                        self.y + self.offsety + 100, self,
+                        Characters.tcorner3,
+                        self.offsetx, self.offsetx)
+        pixel_character(self.offsetx,
+                        self.y + self.offsety + 50, self,
+                        Characters.none,
+                        self.x, self.offsetx)
 
         pixel_character(0, posend, self, Characters.side,
-                        maze.x * self.mult + self.offsetx, self.offsetx)
+                        self.x + self.offsetx, self.offsetx)
         pixel_character(0, posend, self, Characters.corner2,
                         self.offsetx, self.offsetx)
         pixel_character(size1x, posend, self, Characters.corner3,
                         self.offsetx, self.offsetx)
 
         pixel_character(0, 0, self, Characters.side,
-                        maze.x * self.mult + self.offsetx, self.offsetx)
+                        self.x + self.offsetx, self.offsetx)
         pixel_character(0, 0, self, Characters.corner1,
                         self.offsetx, self.offsetx)
         pixel_character(size1x, 0, self, Characters.corner4,
@@ -313,10 +386,102 @@ class Screen:
             for x in range(self.maze.x):
                 self.maze_hex[y] += "0"
         self.steps = 0
+        self.count = 0
+        self.load = -1
         self.solved = False
         self.refresh(redo=True)
         self.finished = False
+        self.Decorate()
         self.paused = False
+
+    def update_loading(self, reset: bool = False) -> None:
+        maze = self.maze
+        cells = maze.objects
+        count = 0
+        for y in range(maze.y):
+            for x in range(maze.x):
+                cell = cells[y][x]
+                if cell.checked is True or cell.Status == 42:
+                    count += 1
+        if reset is True:
+            size = (self.x / self.total_count) * (self.count + 1)
+            xpos: int | float = self.offsetx
+            ypos = maze.y * self.mult + self.offsety + 50
+            pixel_character(int(xpos), int(ypos), self,
+                            Characters.full,
+                            int(size), self.offsetx)
+            return
+        if self.count == count:
+            return
+        while self.count <= count:
+            size = self.x / self.total_count
+            xpos = ((self.offsetx + (size * self.count)) +
+                    (size / 2 if self.count != self.total_count
+                     else -(size / 2)))
+            if xpos != int(xpos):
+                xpos += 1
+                size += 1
+            ypos = maze.y * self.mult + self.offsety + 50
+            pixel_character(int(xpos), int(ypos), self,
+                            Characters.full,
+                            int(size), self.offsetx)
+            self.count += 1
+
+    def draw_line(self, x1: int | float, y1: int | float, x2: int | float,
+                  y2: int | float, size: int = 5,
+                  col: int = 0xFFFFFFFF) -> None:
+        x1, x2, y1, y2 = int(x1), int(x2), int(y1), int(y2)
+        if (abs(x2 - x1) >= abs(y2 - y1)):
+            self.draw_line_w(x1, y1, x2, y2, size, col)
+        else:
+            self.draw_line_h(x1, y1, x2, y2, size, col)
+
+    def draw_line_w(self, x1: int, y1: int, x2: int,
+                    y2: int, size: int, col: int) -> None:
+        if (x1 > x2):
+            x1, x2 = x2, x1
+            y1, y2 = y2, y1
+
+        dx = x2 - x1
+        dy = y2 - y1
+        y = y1
+        direction = -1 if dy < 0 else 1
+        dy *= direction
+        des = 2*dy - dx
+        if dx == 0:
+            return
+        for x in range(x1, x2 + 1):
+            for py in range(size):
+                self.mlx.mlx_pixel_put(self.initScreen, self.screen, x,
+                                       int(y - (size/2) + py), col)
+            if des >= 0:
+                y += direction
+                des -= 2*dx
+            des += 2*dy
+
+    def draw_line_h(self, x1: int, y1: int, x2: int,
+                    y2: int, size: int, col: int) -> None:
+        if (y1 > y2):
+            y1, y2 = y2, y1
+            x1, x2 = x2, x1
+
+        dx = x2 - x1
+        dy = y2 - y1
+        x = x1
+        direction = -1 if dx < 0 else 1
+        dx *= direction
+        des = 2*dx - dy
+
+        if dy == 0:
+            return
+        for y in range(y1, y2 + 1):
+            for px in range(size):
+                self.mlx.mlx_pixel_put(self.initScreen, self.screen,
+                                       int(x - (size/2) + px), y, col)
+            if des >= 0:
+                x += direction
+                des -= 2*dy
+            des += 2*dx
 
     def refresh(self, redo: int = False) -> None:
         col1 = self.primaryCol
@@ -324,14 +489,11 @@ class Screen:
         col3 = self.tertiaryCol
         maze: MazeGrid = self.maze
         posx, posy = self.x, self.y
-
         if self.maze_image is None:
             self.maze_image = Mlx.mlx_new_image(self.mlx, self.initScreen,
                                                 posx, posy)
             self.pixelbuff = list(Mlx.mlx_get_data_addr(self.mlx,
                                                         self.maze_image))
-        a: memoryview = self.pixelbuff[0]
-        a = a.cast('I')
 
         cell_size = self.mult
         cell_dimention = cell_size - self.border_size
@@ -383,58 +545,39 @@ class Screen:
                 ty = int(((cell_size) * y) + self.border_size / 2)
                 tx = int(((cell_size) * x) + self.border_size / 2)
                 if hexa_cell[y][x] != self.maze_hex[y][x] or redo is True:
-                    if cell.Status == 42:
-                        for celly in range(int(cell_dimention -
-                                               self.border_size)):
-                            for cellx in range(int(cell_dimention -
-                                                   self.border_size)):
-                                self.fill_image(self.pixelbuff,
-                                                tx + self.border_size / 2,
-                                                (ty + (cell_size / 2) -
-                                                 cell_dimention / 2),
-                                                (cell_dimention -
-                                                 self.border_size),
-                                                (cell_dimention -
-                                                 self.border_size),
-                                                col3)
-                        if cell.S == 0 and maze.objects[y + 1][x].Status == 42:
-                            self.fill_image(self.pixelbuff,
-                                            tx + self.border_size / 2,
-                                            (ty + (cell_size / 2) -
-                                             cell_dimention / 2),
-                                            cell_dimention - self.border_size,
-                                            (cell_dimention * 2 -
-                                             self.border_size),
-                                            col3)
-                        if cell.N == 0 and maze.objects[y - 1][x].Status == 42:
-                            self.fill_image(self.pixelbuff,
-                                            tx + self.border_size / 2,
-                                            (ty - (cell_size / 2) -
-                                             cell_dimention / 2),
-                                            cell_dimention - self.border_size,
-                                            (cell_dimention * 2 -
-                                             self.border_size),
-                                            col3)
-                        if cell.E == 0 and maze.objects[y][x + 1].Status == 42:
-                            self.fill_image(self.pixelbuff,
-                                            ((tx + (cell_size / 2) -
-                                              cell_dimention / 2) +
-                                             self.border_size / 2),
-                                            ty + self.border_size / 2,
-                                            cell_dimention * 2 -
-                                            self.border_size,
-                                            cell_dimention - self.border_size,
-                                            col3)
-                        if cell.W == 0 and maze.objects[y][x - 1].Status == 42:
-                            self.fill_image(self.pixelbuff,
-                                            ((tx - (cell_size / 2) -
-                                              cell_dimention / 2) +
-                                             self.border_size / 2),
-                                            ty + self.border_size / 2,
-                                            (cell_dimention * 2 -
-                                             self.border_size),
-                                            cell_dimention - self.border_size,
-                                            col3)
+                    if cell.N == 0 and maze.objects[y - 1][x].Status == 42:
+                        self.fill_image(self.pixelbuff,
+                                        tx + self.border_size / 2,
+                                        int(ty - (cell_size / 2) -
+                                            cell_dimention / 2),
+                                        cell_dimention - self.border_size,
+                                        cell_dimention * 2,
+                                        col3)
+                    if cell.S == 0 and maze.objects[y + 1][x].Status == 42:
+                        self.fill_image(self.pixelbuff,
+                                        tx + self.border_size / 2,
+                                        int(ty + (cell_size / 2) -
+                                            cell_dimention / 2),
+                                        cell_dimention - self.border_size,
+                                        cell_dimention * 2,
+                                        col3)
+                    if cell.E == 0 and maze.objects[y][x + 1].Status == 42:
+                        self.fill_image(self.pixelbuff,
+                                        int(tx + (cell_size / 2) -
+                                            cell_dimention / 2),
+                                        ty + self.border_size / 2,
+                                        cell_dimention * 2,
+                                        cell_dimention - self.border_size,
+                                        col3)
+                    if cell.W == 0 and maze.objects[y][x - 1].Status == 42:
+                        self.fill_image(self.pixelbuff,
+                                        int(tx - (cell_size / 2) -
+                                            cell_dimention / 2),
+                                        ty + self.border_size / 2,
+                                        cell_dimention * 2,
+                                        cell_dimention - self.border_size,
+                                        col3)
+
         for y in range(maze.y):
             if self.solved is not True:
                 break
@@ -443,14 +586,6 @@ class Screen:
                 ty = int(((cell_size) * y) + self.border_size / 2)
                 tx = int(((cell_size) * x) + self.border_size / 2)
                 if cell.Status == "path" and self.finished is True:
-                    if cell.S == 0 and maze.objects[y + 1][x].Status == "path":
-                        self.fill_image(self.pixelbuff,
-                                        tx + self.border_size / 2,
-                                        int(ty + (cell_size / 2) -
-                                            cell_dimention / 2),
-                                        cell_dimention - self.border_size,
-                                        cell_dimention * 2,
-                                        col3)
                     if cell.N == 0 and maze.objects[y - 1][x].Status == "path":
                         self.fill_image(self.pixelbuff,
                                         tx + self.border_size / 2,
@@ -483,7 +618,7 @@ class Screen:
     def fill_image(self, pixelbuff: list[Any], px: Any,
                    py: Any, sx: Any, sy: Any, col: int) -> None:
         r, g, b = (col >> 16) & 0xFF, (col >> 8) & 0xFF, (col >> 00) & 0xFF
-        lightrange = 600
+        lightrange = 400
         px = int(px)
         py = int(py)
         sx = int(sx)
@@ -532,6 +667,7 @@ class Screen:
         elif key == 99:
             self.change_color()
             self.refresh(True)
+            self.update_loading(True)
             self.Decorate()
         elif key == 115:
             self.solve_maze()

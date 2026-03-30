@@ -34,6 +34,10 @@ class Characters(Enum):
                "00X",
                "X0X")
 
+    full = ("0")
+
+    none = None
+
     start = ("00X00",
              "0XXX0",
              "XXXXX",
