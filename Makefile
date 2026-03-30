@@ -6,8 +6,8 @@ VENV := a-maze-ing-venv
 PYTHON := $(VENV)/bin/python3
 PIP := $(VENV)/bin/pip
 PYTEST := $(VENV)/bin/pytest
-FLAKE8 := python3 -m flake8 .
-MYPY := python3 -m mypy .
+FLAKE8 := python3 -m flake8
+MYPY := python3 -m mypy
 MAIN := a_maze_ing.py
 SETTINGS := settings.txt
 

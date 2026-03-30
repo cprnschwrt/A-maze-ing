@@ -4,8 +4,8 @@ from sys import argv
 from typing import Any
 
 
-def parse_configs() -> dict:
-    configs: dict = dict()
+def parse_configs() -> dict[str, Any]:
+    configs: dict[str, Any] = dict()
     key = ""
     val: Any = 0
     iskey = True

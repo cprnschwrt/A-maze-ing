@@ -88,7 +88,7 @@ def render(self: Any, force: bool = False, Kill: bool = False) -> None:
 
 
 class Screen:
-    def __init__(self, maze: MazeGrid, settings: dict) -> None:
+    def __init__(self, maze: MazeGrid, settings: dict[str, Any]) -> None:
         from algo_backtrack_recursive import backtracking_recursive
         self.mlx = Mlx()
         self.initScreen = self.mlx.mlx_init()

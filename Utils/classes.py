@@ -22,50 +22,10 @@ class MazePart():
         self.checked: bool = False
 
 
-def check_next(direc: str, cell: MazePart, maze: Any) -> None:
-    from algo_backtrack_recursive import get_oppposite, update_cell
-    directions: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
-    x, y = cell.position.x, cell.position.y
-    direc = get_oppposite(direc)
-    targ = None
-    dir = directions.get(direc) or 0
-    if direc == "N" or direc == "S":
-        targ = maze.objects[y - dir][x]
-    else:
-        targ = maze.objects[y][x - dir]
-    update_cell(targ, direc)
-    targ.Status = 42
-    targ.checked = True
-
-
-def check_char(char: str, cell: MazePart, maze: Any) -> None:
-    if char == "S":
-        cell.S = 0
-        cell.checked = True
-        cell.Status = 42
-    elif char == "E":
-        cell.E = 0
-        cell.checked = True
-        cell.Status = 42
-    elif char == "W":
-        cell.W = 0
-        cell.checked = True
-        cell.Status = 42
-    elif char == "N":
-        cell.N = 0
-        cell.checked = True
-        cell.Status = 42
-    elif char == "O":
-        cell.checked = True
-        cell.Status = 42
-    if char != "O" and char != "X":
-        check_next(char, cell, maze)
-
-
 class MazeGrid(BaseModel):
     x: int
     y: int
-    objects: list = []
+    objects: list[list[MazePart]] = []
 
     @model_validator(mode="after")
     def start(self: Any) -> Any:
@@ -102,3 +62,70 @@ class MazeGrid(BaseModel):
 
     def __len__(self: Any) -> Any:
         return self.x * self.y
+
+
+def get_oppposite(target: str) -> str:
+    if target == "N":
+        return "S"
+    elif target == "S":
+        return "N"
+    elif target == "E":
+        return "W"
+    elif target == "W":
+        return "E"
+    return ""
+
+
+def update_cell(cell: MazePart, target: str) -> str:
+    if target == "N":
+        cell.N = 0
+        return "S"
+    elif target == "S":
+        cell.S = 0
+        return "N"
+    elif target == "E":
+        cell.E = 0
+        return "W"
+    elif target == "W":
+        cell.W = 0
+        return "E"
+    return ""
+
+
+def check_next(direc: str, cell: MazePart, maze: MazeGrid) -> None:
+    directions: dict[str, int] = {"N": -1, "S": 1, "E": 1, "W": -1}
+    x, y = cell.position.x, cell.position.y
+    direc = get_oppposite(direc)
+    targ = None
+    dir = directions.get(direc) or 0
+    if direc == "N" or direc == "S":
+        targ = maze.objects[y - dir][x]
+    else:
+        targ = maze.objects[y][x - dir]
+    update_cell(targ, direc)
+    targ.Status = 42
+    targ.checked = True
+
+
+def check_char(char: str, cell: MazePart, maze: MazeGrid) -> None:
+    if char == "S":
+        cell.S = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "E":
+        cell.E = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "W":
+        cell.W = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "N":
+        cell.N = 0
+        cell.checked = True
+        cell.Status = 42
+    elif char == "O":
+        cell.checked = True
+        cell.Status = 42
+    if char != "O" and char != "X":
+        check_next(char, cell, maze)

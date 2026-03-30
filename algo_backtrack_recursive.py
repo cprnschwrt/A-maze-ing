@@ -59,7 +59,7 @@ def get_cell(self: Any, direction: str, position: Vector2, val: Any) -> Any:
 def backtracking_recursive(self: Any, maze: MazeGrid, startingpos: Vector2,
                            parent: Any = None, comefrom: str | None = None,
                            perfect: bool = False) -> Any:
-    directions: dict = {"N": -1, "S": 1, "E": 1, "W": -1}
+    directions: dict[str, int] = {"N": -1, "S": 1, "E": 1, "W": -1}
     Dupdirections: dict[str, int] = {"N": -1, "S": 1, "E": 1, "W": -1}
 
     def step() -> Generator[None]:
