@@ -38,28 +38,10 @@ class Characters(Enum):
              "0XXX0",
              "XXXXX",
              "0XXX0",
-             "00X00",)
+             "00X00")
 
     end = ("X000X",
            "0X0X0",
            "00X00",
            "0X0X0",
-           "X000X",)
-
-    a = ("0XXX0",
-         "XX0XX",
-         "XXXXX",
-         "XX0XX",
-         "XX0XX")
-
-    b = ("XXXX0",
-         "X000X",
-         "XXXX0",
-         "X000X",
-         "XXXXX")
-
-    c = ("0XXXX",
-         "X0000",
-         "X0000",
-         "X0000",
-         "0XXXX")
+           "X000X")
