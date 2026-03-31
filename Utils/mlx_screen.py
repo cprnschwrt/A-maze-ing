@@ -317,10 +317,7 @@ class Screen:
 
     def restart(self) -> None:
         self.func = self.mlx.mlx_loop_hook(self.initScreen, self.render, self)
-        algo = self.maze.algo
-        self.maze = MazeGrid(x=self.maze.x, y=self.maze.y, algo=algo,
-                             exit=self.maze.exit, entry=self.maze.entry,
-                             settings=self.maze.settings, visualizer=Screen)
+        print("Re-generating...")
         for y in range(self.maze.y):
             self.maze_hex.append("")
             for x in range(self.maze.x):
@@ -329,6 +326,7 @@ class Screen:
                              self.y + self.offsety + 50, self,
                              MlxCharacters.none,
                              self.x, self.offsetx)
+        self.maze.verif()
         self.count = -1
         self.load = -1
         self.solved = False

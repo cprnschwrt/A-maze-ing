@@ -7,7 +7,7 @@ PIP := $(VENV)/bin/pip
 PYTEST := $(VENV)/bin/pytest
 FLAKE8 := python3 -m flake8
 MYPY := python3 -m mypy
-MAIN := a_maze_ing.py
+MAIN := a_maze_ing
 
 install:
 	@echo "Creation of the venv if necessary..."
@@ -20,7 +20,7 @@ install:
 	$(PIP) install pytest flake8 mypy
 
 run:
-	$(PYTHON) -m $(MAIN)
+	$(PYTHON) -m $(MAIN) settings.txt
 
 debug:
 	$(PYTHON) -m pdb $(MAIN)

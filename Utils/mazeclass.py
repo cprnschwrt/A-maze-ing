@@ -69,7 +69,6 @@ class MazeGrid(BaseModel):
         """Initialize and start the maze generation."""
         self.verif()
         seed(self.seed)
-        self.step = self.algo(self, self.entry, perfect=self.perfect)
         self.count = 0
         if self.visualize is True:
             self.visualizer(self, self.settings)
@@ -79,6 +78,13 @@ class MazeGrid(BaseModel):
             print(f"Maze generated in {self.count} moves")
             self.save()
         return self
+
+    def clear_cells(self) -> None:
+        for y in range(self.y):
+            list.append(self.objects, [])
+            for x in range(self.x):
+                list.append(self.objects[y], [])
+                self.objects[y][x] = MazePart(Vector2(x=x, y=y))
 
     def save(self) -> None:
         """Save the maze's data as a file."""
@@ -90,7 +96,7 @@ class MazeGrid(BaseModel):
         path = vals[1]
         for pos in cells:
             self.objects[pos.y][pos.x].Status = "path"
-        print("Done !")
+        print("Generation completed.")
         hex = self.hexa_grid()
         with open(self.output, "w") as file:
             for line in hex:
@@ -115,13 +121,7 @@ class MazeGrid(BaseModel):
             self.x = settings["width"]
         except KeyError:
             pass
-
-        for y in range(self.y):
-            list.append(self.objects, [])
-            for x in range(self.x):
-                list.append(self.objects[y], [])
-                self.objects[y][x] = MazePart(Vector2(x=x, y=y))
-
+        self.clear_cells()
         try:
             self.entry = Vector2(x=settings["entry"][0] - 1,
                                  y=settings["entry"][1] - 1)
@@ -171,6 +171,7 @@ class MazeGrid(BaseModel):
             raise ValueError
         if self.seed == -1:
             self.seed = randint(0, randint(1, 1000000000))
+        self.step = self.algo(self, self.entry, perfect=self.perfect)
 
 # Generation
 
@@ -213,12 +214,14 @@ class MazeGrid(BaseModel):
         return result
 
     def get_shortest_path(self, position: Vector2,
-                          target: Vector2, trail: list[Vector2] = [],
+                          target: Vector2, trail: list[Vector2] | None = None,
                           origin: str = "", current_path: str = "",
                           current: list[MazePart] | None = None,
                           path: str = "") -> Any:
         """Find the shortest path possible in the maze.\n
         Returns a list of cells and a string of movements"""
+        if trail is None:
+            trail = []
         directions: dict[str, int] = {"N": -1, "S": 1, "E": 1, "W": -1}
         cell = self.objects[position.y][position.x]
         for val in trail:
@@ -255,7 +258,7 @@ class MazeGrid(BaseModel):
                 if re is not None:
                     current = re
                     current_path = fpath
-        return [current, current_path]
+        return current, current_path
 
     def __len__(self: Any) -> Any:
         return self.x * self.y
