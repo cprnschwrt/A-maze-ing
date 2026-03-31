@@ -25,3 +25,7 @@ build/
 
 # Log files
 *.log
+
+#python files/output
+output_validator.py
+maze.txt
