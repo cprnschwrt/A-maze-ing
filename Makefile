@@ -14,7 +14,7 @@ install:
 	test -d a-maze-ing-venv || python3 -m venv a-maze-ing-venv
 	@echo "Activation of the venv and installation of dependancies..."
 	a-maze-ing-venv/bin/activate
-	$(PIP) install mlx_downloader.whl
+	$(PIP) install mlx-2.2-py3-none-any.whl
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
 	$(PIP) install pytest flake8 mypy
