@@ -53,20 +53,20 @@ def parse_configs() -> dict[str, Any]:
             if char == "#":
                 active = False
                 continue
-            if char == '\n':
-                if val is None:
-                    raise Exception("Parsing Error: "
-                                    "Could not assign value to key !")
+            if char == '\n' or char == '':
+                if val is None and active is True:
+                    raise Exception("Invalid config file: KEY=VALUE expected")
                 if val == "True":
                     val = True
                 elif val == "False":
                     val = False
-                if active:
-                    configs.update({key.lower(): val})
+                configs.update({key.lower(): val})
                 iskey = True
                 active = True
                 key = ""
                 val = None
+                continue
+            if active is False:
                 continue
             if char == " ":
                 continue
@@ -95,8 +95,21 @@ def parse_configs() -> dict[str, Any]:
                             val = str(val) + char
                     elif isinstance(val, str):
                         val += char
+                    elif char == "-" and isinstance(val, list):
+                        val[len(val) - 1] *= -1
                     else:
                         int(char)
                         val[len(val) - 1] *= 10
                         val[len(val) - 1] += int(char)
+    if val is None and active is True:
+        raise Exception("Invalid config file: KEY=VALUE expected")
+    if val == "True":
+        val = True
+    elif val == "False":
+        val = False
+    configs.update({key.lower(): val})
+    iskey = True
+    active = True
+    key = ""
+    val = None
     return configs

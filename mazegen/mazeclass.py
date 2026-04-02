@@ -68,7 +68,11 @@ class MazeGrid(BaseModel):
         """Initialize and start the maze generation."""
         from .algo_backtrack_recursive import backtracking_recursive
         self.algo = backtracking_recursive
-        self.verif()
+        try:
+            self.verif()
+        except (Exception, ValueError, TypeError) as err:
+            print(f"\033[38;2;255mError while loading, {err}\033[0m")
+            exit(1)
         seed(self.seed)
         self.count = 0
         print(f"Maze generation started. (Seed: {self.seed})")
@@ -121,6 +125,7 @@ class MazeGrid(BaseModel):
         --> No settings will result in default settings"""
 
         self.settings = parse_configs()
+
         settings = self.settings
 
         try:
@@ -201,22 +206,19 @@ class MazeGrid(BaseModel):
             print("Maze too small to generate 42 icon, Proceeding without it.")
         if (self.entry.x > self.x or
                 self.entry.y > self.y):
-            print("Invalid Entry Point ! Exit is out of bound.")
-            raise ValueError
+            raise ValueError("Invalid Entry Point ! Exit is out of bound.")
         elif (self.exit.x > self.x or
                 self.exit.y > self.y):
-            print("Invalid Exit Point ! Exit is out of bound.")
-            raise ValueError
+            raise ValueError("Invalid Exit Point ! Exit is out of bound.")
         elif (self.objects[self.entry.y][self.entry.x].Status == 42):
-            print("Invalid Entry Point ! Position conflict with 42 icon.")
-            raise ValueError
+            raise ValueError("Invalid Entry Point !"
+                             "Position conflict with 42 icon.")
         elif (self.objects[self.exit.y][self.exit.x].Status == 42):
-            print("Invalid Exit Point ! Position conflict with 42 icon.")
-            raise ValueError
+            raise ValueError("Invalid Exit Point !"
+                             "Position conflict with 42 icon.")
         elif (self.entry.y == self.exit.y and self.entry.x == self.exit.x):
-            print("Invalid Exit And Entry Point ! "
-                  "Position conflict with each others.")
-            raise ValueError
+            raise ValueError("Invalid Exit And Entry Point ! "
+                             "Position conflict with each others.")
         if self.seed == -1:
             self.seed = randint(0, randint(1, 1000000000))
         self.step = self.algo(self, self.entry, perfect=self.perfect)
