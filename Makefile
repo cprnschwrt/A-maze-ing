@@ -38,6 +38,3 @@ lint:
 lint-strict:
 	$(FLAKE8) .
 	$(MYPY) . --strict
-
-test:
-	PYTHONPATH=$(PWD) $(PYTEST) tests
