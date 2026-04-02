@@ -1,5 +1,5 @@
 from pydantic import BaseModel, model_validator
-from typing import Any, Callable, Generator
+from typing import Any
 from random import randint, seed
 from .utility_func import parse_configs
 
@@ -51,7 +51,7 @@ class MazeGrid(BaseModel):
     x: int = 0
     y: int = 0
     objects: list[Any] = []
-    algo: Callable[[Any, Vector2, bool], Generator[None]]
+    algo: Any = None
     step: Any = None
     count: int = 0
     entry: Vector2 = Vector2(x=0, y=0)
@@ -61,17 +61,27 @@ class MazeGrid(BaseModel):
     settings: dict[str, Any] = {}
     output: str = "maze.txt"
     perfect: bool = False
-    visualizer: Any
 # Setup
 
     @model_validator(mode="after")
     def start(self: Any) -> Any:
         """Initialize and start the maze generation."""
+        from .algo_backtrack_recursive import backtracking_recursive
+        self.algo = backtracking_recursive
         self.verif()
         seed(self.seed)
         self.count = 0
+        print(f"Maze generation started. (Seed: {self.seed})")
         if self.visualize is True:
-            self.visualizer(self, self.settings)
+            try:
+                from .mlx_screen import Screen
+                Screen(self, self.settings)
+            except ModuleNotFoundError:
+                print("Visualizer not found, Proceeding without.")
+                while self.step is not None:
+                    self.generate_step()
+                print(f"Maze generated in {self.count} moves")
+                self.save()
         else:
             while self.step is not None:
                 self.generate_step()
@@ -102,8 +112,8 @@ class MazeGrid(BaseModel):
             for line in hex:
                 file.write(line + "\n")
             file.write("\n")
-            file.write(f"{self.entry.y}, {self.entry.x}\n")
-            file.write(f"{self.exit.y}, {self.exit.x}\n")
+            file.write(f"{self.entry.y + 1}, {self.entry.x + 1}\n")
+            file.write(f"{self.exit.y + 1}, {self.exit.x + 1}\n")
             file.write(f"{path}\n")
 
     def verif(self) -> None:
@@ -112,51 +122,89 @@ class MazeGrid(BaseModel):
 
         self.settings = parse_configs()
         settings = self.settings
-        x, y = 20, 20
+
         try:
-            self.y = settings["height"]
-        except KeyError:
-            pass
+            if not isinstance(settings["height"], int) or\
+                    int(settings["height"] <= 0):
+                raise TypeError("Invalid Value, must be a number above 0")
+            self.y = int(settings["height"])
+        except (KeyError, TypeError) as err:
+            raise Exception(f"Invalid Height: {err}")
+
         try:
-            self.x = settings["width"]
-        except KeyError:
-            pass
+            if not isinstance(settings["width"], int) or\
+                    int(settings["width"] <= 0):
+                raise TypeError("Invalid Value, must be a number above 0")
+            self.x = int(settings["width"])
+        except (KeyError, TypeError) as err:
+            raise Exception(f"Invalid Width: {err}")
+
         self.clear_cells()
         try:
+            if not isinstance(settings["entry"], list) or\
+                     int(settings["entry"][0]) <= 0 or\
+                     int(settings["entry"][1]) <= 0 or\
+                     int(settings["entry"][0]) > self.y or\
+                     int(settings["entry"][1]) > self.x:
+                raise (TypeError("Entry must be a list with numbers above 0."))
+            if len(settings["entry"]) != 2:
+                raise (TypeError("Entry can only have 2 values."))
             self.entry = Vector2(x=settings["entry"][0] - 1,
                                  y=settings["entry"][1] - 1)
-        except KeyError:
-            self.entry = Vector2(x=0, y=0)
+        except (KeyError, TypeError) as err:
+            raise Exception("Entry coordinates must be valid settings: "
+                            f"{err}")
 
         try:
+            if not isinstance(settings["exit"], list) or\
+                     int(settings["exit"][0]) <= 0 or\
+                     int(settings["exit"][1]) <= 0 or\
+                     int(settings["exit"][0]) > self.y or\
+                     int(settings["exit"][1]) > self.x:
+                raise (TypeError("Exit must be a list with numbers above 0."))
+            if len(settings["exit"]) != 2:
+                raise (TypeError("Exit can only have 2 values."))
             self.exit = Vector2(x=settings["exit"][0] - 1,
                                 y=settings["exit"][1] - 1)
-        except KeyError:
-            self.exit = Vector2(x=x-1, y=x-1)
+        except (KeyError, TypeError) as err:
+            raise Exception("Exit coordinates must be valid settings: "
+                            f"{err}")
 
         try:
-            self.visualize = settings["visualize"]
-        except KeyError:
+            if not isinstance(settings["output_file"], str):
+                raise (TypeError("Output file name is required as a str."))
+            self.output = settings["output_file"]
+        except (KeyError, TypeError) as err:
+            raise Exception("Output_file must be a valid setting: "
+                            f"{err}")
+
+        try:
+            self.visualize = bool(settings["visualize"])
+        except (KeyError, TypeError):
             self.visualize = False
 
         try:
-            self.seed = settings["seed"]
-        except KeyError:
+            self.seed = int(settings["seed"])
+        except (KeyError, TypeError):
             pass
 
         try:
+            if not isinstance(settings["output_file"], str):
+                raise (TypeError("Perfect settings must be a boolean."))
             self.perfect = settings["perfect"]
-        except KeyError:
-            pass
+        except (KeyError, TypeError) as err:
+            raise Exception(f"Invalid Perfect Settings: {err}")
 
         if self.x >= 8 and self.y >= 7:
             self.make42()
+        else:
+            print("Maze too small to generate 42 icon, Proceeding without it.")
         if (self.entry.x > self.x or
                 self.entry.y > self.y):
             print("Invalid Entry Point ! Exit is out of bound.")
             raise ValueError
         elif (self.exit.x > self.x or
-                self.exit.y > y):
+                self.exit.y > self.y):
             print("Invalid Exit Point ! Exit is out of bound.")
             raise ValueError
         elif (self.objects[self.entry.y][self.entry.x].Status == 42):

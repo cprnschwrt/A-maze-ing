@@ -4,7 +4,7 @@ from .utility_func import to_colhex, magnitude
 from .mlxcharacters import MlxCharacters
 import inspect
 from typing import Any
-from mlx import Mlx
+from mlx import Mlx  # type: ignore
 
 
 class Screen:
@@ -75,18 +75,14 @@ class Screen:
             self.maze_hex.append("")
             for x in range(self.maze.x):
                 self.maze_hex[y] += "0"
-        self.mouse_x = 0
         self.x = int(maze.x * self.mult)
         self.y = int(maze.y * self.mult)
-        self.mouse_y = 0
         self.generation_started = True
 
         self.lights = [Vector2(x=int(self.x/2), y=int(self.y/2)),
                        Vector2(x=0, y=0), Vector2(x=self.x, y=0),
                        Vector2(x=self.x, y=self.y), Vector2(x=0, y=self.y)]
 
-        self.wall_color = 0xFF0000FF
-        self.cell_color = 0xFF000099
         m: Mlx = self.mlx
         self.func = m.mlx_loop_hook(self.initScreen, self.render, self)
         m.mlx_key_hook(self.screen, self.close_screen, self)

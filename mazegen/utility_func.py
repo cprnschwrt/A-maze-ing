@@ -45,7 +45,7 @@ def wait(val: int | float) -> None:
 def parse_configs() -> dict[str, Any]:
     configs: dict[str, Any] = dict()
     key = ""
-    val: Any = 0
+    val: Any = None
     iskey = True
     active = True
     with open(argv[1], "r") as settings:
@@ -54,6 +54,9 @@ def parse_configs() -> dict[str, Any]:
                 active = False
                 continue
             if char == '\n':
+                if val is None:
+                    raise Exception("Parsing Error: "
+                                    "Could not assign value to key !")
                 if val == "True":
                     val = True
                 elif val == "False":
@@ -63,18 +66,23 @@ def parse_configs() -> dict[str, Any]:
                 iskey = True
                 active = True
                 key = ""
-                val = 0
+                val = None
                 continue
             if char == " ":
                 continue
-            if char == "=":
+            if char == "=" and iskey is True:
+                val = 0
                 iskey = False
                 continue
             if iskey is True:
                 key += char
             else:
-                if char == ",":
-                    val = [val, 0]
+                if char == "," and not isinstance(val, list):
+                    val = [val]
+                    val.append(0)
+                    continue
+                elif char == ",":
+                    val.append(0)
                     continue
                 else:
                     if isinstance(val, int):
@@ -89,6 +97,6 @@ def parse_configs() -> dict[str, Any]:
                         val += char
                     else:
                         int(char)
-                        val[1] *= 10
-                        val[1] += int(char)
+                        val[len(val) - 1] *= 10
+                        val[len(val) - 1] += int(char)
     return configs

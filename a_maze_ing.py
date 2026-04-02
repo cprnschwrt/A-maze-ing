@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-from Utils.mazeclass import MazeGrid
-from Utils.algo_backtrack_recursive import backtracking_recursive
-from Utils.mlx_screen import Screen
+from mazegen import MazeGrid
 
 
 def main() -> MazeGrid:
-    newmaze = MazeGrid(algo=backtracking_recursive, visualizer=Screen)
+    newmaze = MazeGrid()
     return newmaze
 
 

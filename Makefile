@@ -20,7 +20,7 @@ install:
 	$(PIP) install pytest flake8 mypy
 
 run:
-	$(PYTHON) -m $(MAIN) settings.txt
+	$(PYTHON) -m $(MAIN) config.txt
 
 debug:
 	$(PYTHON) -m pdb $(MAIN)
@@ -28,7 +28,8 @@ debug:
 clean:
 	rm -rf $(VENV)
 	rm -rf maze.txt
-	rm -rf __pycache__ .mypy_cache .pytest_cache Utils/__pycache__ .vscode
+	rm -rf __pycache__ .mypy_cache .pytest_cache Utils/__pycache__ .vscode\
+			mazegen.egg-info dist build mazegen/__pycache__
 
 lint:
 	$(FLAKE8) .
