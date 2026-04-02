@@ -85,7 +85,7 @@ class Screen:
 
         m: Mlx = self.mlx
         self.func = m.mlx_loop_hook(self.initScreen, self.render, self)
-        m.mlx_key_hook(self.screen, self.close_screen, self)
+        m.mlx_key_hook(self.screen, self.keybind_manager, self)
         self.Decorate()
         self.refresh(redo=True)
         m.mlx_loop(self.initScreen)
@@ -583,7 +583,7 @@ class Screen:
                 pixelbuff[0][pixel + 3] = (pixel_color >> 24) & 0xFF
 
     @staticmethod
-    def close_screen(key: int, self: Any) -> Any:
+    def keybind_manager(key: int, self: Any) -> Any:
         if key == 65307:
             self.mlx.mlx_loop_exit(self.initScreen)
         elif key == 112:
@@ -605,8 +605,6 @@ class Screen:
             self.update_loading(True)
         elif key == 115:
             self.solve_maze()
-        else:
-            print(key)
 
     def change_color(self) -> None:
         colorPalets = {
