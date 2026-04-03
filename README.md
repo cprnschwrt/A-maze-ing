@@ -92,4 +92,4 @@
     The code can be reused and addapted, the Vector2 class made it easy to addapt to other module or to edit.
 
 ## project management
-    The project was mostly handled by bgix, as he is used to work on project 
+    
