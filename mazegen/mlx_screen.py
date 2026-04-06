@@ -4,7 +4,7 @@ from .utility_func import to_colhex, magnitude
 from .mlxcharacters import MlxCharacters
 import inspect
 from typing import Any
-from mlx import Mlx  # type: ignore
+from mlx import Mlx  # type: ignore[unused-ignore, import-not-found]
 
 
 class Screen:

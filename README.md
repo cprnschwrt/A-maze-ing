@@ -49,16 +49,19 @@
 ## Resources
 
 ### bgix:
-    MLX: Students.
-    Algo: Several sources online.
-    Algo to draw line: Online searches and youtube videos for explainations.
+MLX: Students.
+Algo: Several sources online.
+Algo to draw line: Online searches and youtube videos for explainations.
 
-    AI Uses:
-        None
+AI Uses:
+    None
 
 ### cschwart:
-    AI Uses:
-        ???
+
+> Mets tes sources ici
+
+AI Uses:
+    ???
 
 ## Config Format
     The config must be in this format:
@@ -74,22 +77,45 @@
     EXIT Define the exit point of the maze
     PERFECT Define if the maze is perfect or not
     OUTPUT_FILE Define the name of the output file
+    VISUALIZE Define if the maze display everything or skip straight to the output
+    LIGHTS Display the light point in the mlx, warning though the display become VERY slow when using this
+    SEED Use a specific seed in the making of the maze, if none are given it will make a random one by default
 
 ## Algorithm
-    The algoritm used was the backtrack_recursive algorythim
+The algoritm used was the backtrack_recursive algorythim
     
-    It moves from cells to cells until it is blocked and can no longer move into an other cell (exluding the one the head come froms).
-    In wich case it will go backward until it find a cells that has not been checked and will continue its path from it.
-    Once it moved into every cell it means the maze is completed.
+It moves from cells to cells until it is blocked and can no longer move into an other cell (exluding the one the head come froms).
+In wich case it will go backward until it find a cells that has not been checked and will continue its path from it.
+Once it moved into every cell it means the maze is completed.
 
-    The only difference from perfect and not perfect is that if it reach a cul-de-sac, it will break down the wall in front of where it comes from if it iss not a border.
+The only difference from perfect and not perfect is that if it reach a cul-de-sac, it will break down the wall in front of where it comes from if it iss not a border.
 
 ### Why ?
-    Because this one is pretty interesting to do but also satisfying to watch as the maze generate on the screen
-    The most interesting to do was to addapt it to play steps by steps using generators.
+
+Because this one is pretty interesting to do but also satisfying to watch as the maze generate on the screen
+The most interesting to do was to addapt it to play steps by steps using generators.
 
 ## Reusability
-    The code can be reused and addapted, the Vector2 class made it easy to addapt to other module or to edit.
+
+The code can be reused and addapted, the Vector2 class made it easy to addapt to other module or to edit.
 
 ## project management
-    The project was mostly handled by bgix, as he is used to work on project 
+Bgix was mostly handing the mlx while cschwart handle the algorythm
+
+We anticipated more unfortunatly we didnt had the time to fully satisfy what we wanted to.
+
+Overall we're proud of what we did even if the speed of the algorythm resolutions could be improved
+and the mlx could run faster
+    
+We used the mlx as visual tool as it was the one given to us per the subject
+
+## MLX
+
+### Keybinds
+
+    R: Restart maze with a random seed
+    S: Solve / Unsolve the maze [Only work when maze generation is over]
+    C: Change the coloring of the maze
+    P: Pause / Unpause the generation
+        Right arrow when paused: Execute a step in the maze
+    ESC: Close the MLX
