@@ -589,12 +589,15 @@ class Screen:
         elif key == 112:
             if self.paused is False:
                 self.paused = True
-                print("self.paused")
+                print("Paused")
             else:
                 self.paused = False
-                print("Unself.paused")
+                print("Resuming")
         elif key == 65363:
-            self.render(self, True)
+            if self.maze.step is not None:
+                self.render(self, True)
+            else:
+                print("No more steps can be done.")
         elif key == 114:
             self.paused = True
             self.restart()
