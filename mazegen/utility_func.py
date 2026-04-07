@@ -54,7 +54,7 @@ def parse_configs() -> dict[str, Any]:
                 active = False
                 continue
             if char == '\n' or char == '':
-                if val is None and active is True:
+                if val is None and active is True and key != "":
                     raise Exception("Invalid config file: KEY=VALUE expected")
                 if val == "True":
                     val = True
@@ -101,8 +101,8 @@ def parse_configs() -> dict[str, Any]:
                         int(char)
                         val[len(val) - 1] *= 10
                         val[len(val) - 1] += int(char)
-    if val is None and active is True:
-        raise Exception("Invalid config file: KEY=VALUE expected")
+    if val is None and active is True and key != "":
+        raise Exception(f"Invalid config file: KEY=VALUE expected {key}")
     if val == "True":
         val = True
     elif val == "False":
