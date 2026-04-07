@@ -58,10 +58,10 @@ AI Uses:
 
 ### cschwart:
 
-> Mets tes sources ici
+Algo: Several sources online.
 
 AI Uses:
-    ???
+    For some debugging
 
 ## Config Format
     The config must be in this format:
